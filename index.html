@@ -43,7 +43,7 @@
         }
 
         .logo-container img {
-            max-width: 150px; /* Ajustado el tamaño */
+            max-width: 150px;
             height: auto;
         }
 
@@ -65,7 +65,7 @@
         input[type="text"]:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1); }
         
         .legal-box { 
-            height: 180px; 
+            height: 200px; /* Altura solicitada */
             overflow-y: auto; 
             border: 1px solid #e2e8f0; 
             padding: 15px; 
@@ -141,7 +141,7 @@
     
     <div class="form-group">
         <label>Nombre Completo</label>
-        <input type="text" id="nombre" placeholder="Ej: Sapi Tealdo">
+        <input type="text" id="nombre" placeholder="Nombre y Apellido">
     </div>
 
     <div class="form-group">
@@ -149,7 +149,7 @@
         <input type="text" id="dni" placeholder="Número de documento">
     </div>
 
-    <div class="legal-box">
+    <div class="legal-box" id="legal-text-container">
         <strong>Acuerdo de Exoneración de Responsabilidad - Circuito WPCC 2026</strong><br><br>
         Complejo Deportivo: WORLD PADEL CENTER CONCORDIA<br><br>
         1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos (torceduras, fracturas, golpes). El Participante asume voluntariamente todos los riesgos.<br><br>
@@ -184,9 +184,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-    // COLOCA AQUÍ EL LINK DE TU LOGO (Asegúrate que termine en .png o .jpg)
-    const URL_LOGO = "https://lh3.googleusercontent.com/u/0/d/1FR97joQ6vlgTvgK18uO-7Mg3ab9q4LPZ"; 
-
+    // URL DEL LOGO - REEMPLAZAR AQUÍ
+    const URL_LOGO = "https://tu-sitio.com/logo-padel.png"; 
 
     const firebaseConfig = {
         apiKey: "AIzaSyCvB-licXMCGf0aotJOJis-UDETCWi0kTU",
@@ -203,11 +202,9 @@
     const signaturePad = new SignaturePad(canvas);
     let firmaBase64 = null;
 
-    // CARGAR LOGO EN EL INDEX
-    const logoImg = document.getElementById('img-logo-web');
-    if(logoImg) {
-        logoImg.src = URL_LOGO;
-    }
+    // Cargar logo en la web
+    const webLogo = document.getElementById('img-logo-web');
+    if(webLogo) webLogo.src = URL_LOGO;
 
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -245,25 +242,21 @@
         btn.innerText = "⏳ PROCESANDO...";
 
         try {
-            await addDoc(collection(db, "deslindes"), {
-                nombre: nombre, dni: dni, fecha: new Date().toLocaleString('es-AR'), firma_img: firmaBase64
-            });
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // LOGO EN PDF
+            // 1. LOGO EN PDF (Ajustado para no verse aplastado)
             try {
-                doc.addImage(URL_LOGO, 'PNG', 85, 10, 40, 20); 
-            } catch(e) { console.log("No se pudo cargar el logo en PDF"); }
+                doc.addImage(URL_LOGO, 'PNG', 80, 10, 50, 25); 
+            } catch(e) { console.error("Logo no disponible para PDF"); }
 
             doc.setFontSize(16);
             doc.setTextColor(44, 62, 80);
-            doc.text("DESLINDE DE RESPONSABILIDAD", 105, 40, { align: "center" });
+            doc.text("DESLINDE DE RESPONSABILIDAD", 105, 45, { align: "center" });
             
             doc.setFontSize(10);
             doc.setTextColor(100);
-            doc.text("CIRCUITO WPCC 2026 - WORLD PADEL CENTER CONCORDIA", 105, 46, { align: "center" });
+            doc.text("CIRCUITO WPCC 2026 - WORLD PADEL CENTER CONCORDIA", 105, 51, { align: "center" });
 
             const legalText = `Por la presente, quien suscribe declara conocer y aceptar los términos y condiciones:
             
@@ -277,9 +270,9 @@
 
             doc.setFontSize(9);
             const splitLegal = doc.splitTextToSize(legalText, 170);
-            doc.text(splitLegal, 20, 60);
+            doc.text(splitLegal, 20, 65);
 
-            const finalY = 65 + (splitLegal.length * 5);
+            const finalY = 70 + (splitLegal.length * 5);
             
             doc.setFontSize(12);
             doc.setTextColor(0);
@@ -294,11 +287,21 @@
             doc.setDrawColor(39, 174, 96);
             doc.line(20, finalY + 75, 190, finalY + 75);
 
+            // 2. GUARDAR EN FIREBASE (Incluimos el texto legal para el Admin)
+            await addDoc(collection(db, "deslindes"), {
+                nombre: nombre,
+                dni: dni,
+                fecha: new Date().toLocaleString('es-AR'),
+                firma_img: firmaBase64,
+                deslinde_texto: legalText
+            });
+
+            // 3. GENERAR BLOB Y COMPARTIR
             const pdfBlob = doc.output('blob');
             const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
             
             if (navigator.share && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: 'Tu Deslinde' }).catch(() => {});
+                await navigator.share({ files: [file], title: 'Tu Deslinde PadelSafe' }).catch(() => {});
             } else {
                 doc.save(`Deslinde_${dni}.pdf`);
             }
@@ -307,8 +310,9 @@
             window.location.reload();
 
         } catch (e) {
-            alert("Error de conexión.");
+            alert("Error al procesar. Revisa tu conexión.");
             btn.disabled = false;
+            btn.innerText = "FINALIZAR Y ENVIAR ✅";
         }
     };
 </script>
