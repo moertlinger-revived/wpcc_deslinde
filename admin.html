@@ -5,64 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Admin - PadelSafe PRO</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; }
         .dashboard { max-width: 1100px; margin: 0 auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { color: #1a1a1a; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f4f8; padding-bottom: 15px; }
-        .search-box { margin-bottom: 2rem; }
+        h1 { color: #1a1a1a; border-bottom: 2px solid #f0f4f8; padding-bottom: 15px; margin-bottom: 20px; }
+        .search-box { margin-bottom: 20px; }
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; background: #f8fafc; padding: 12px; border-bottom: 2px solid #edf2f7; color: #4a5568; }
-        td { padding: 12px; border-bottom: 1px solid #edf2f7; color: #2d3748; }
-        .actions { display: flex; gap: 8px; }
-        .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
-        .btn-view { background: #edf2f7; color: #4a5568; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; background: #f8fafc; padding: 12px; border-bottom: 2px solid #edf2f7; }
+        td { padding: 12px; border-bottom: 1px solid #edf2f7; }
+        .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 5px; }
         .btn-pdf { background: #27ae60; color: white; }
-        .btn-pdf:hover { background: #219150; }
-        .badge { background: #c6f6d5; color: #22543d; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
-        
-        /* Modal */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 90%; max-width: 500px; border-radius: 16px; text-align: center; position: relative; }
-        .firma-preview { border: 1px solid #eee; width: 100%; margin-top: 15px; border-radius: 8px; }
-        .close-modal { position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem; color: #999; }
+        .btn-view { background: #edf2f7; color: #4a5568; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 12px; position: relative; text-align: center; }
+        .firma-preview { border: 1px solid #eee; width: 100%; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <h1>
-        PadelSafe Admin 
-        <span style="font-size: 0.9rem; font-weight: normal; color: #666;">Gestión de Deslindes</span>
-    </h1>
-
+    <h1>PadelSafe Admin</h1>
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Filtrar por nombre o DNI...">
+        <input type="text" id="searchInput" placeholder="Buscar por DNI o Nombre...">
     </div>
-
     <table>
         <thead>
             <tr>
                 <th>Fecha</th>
                 <th>Jugador</th>
                 <th>DNI</th>
-                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody id="resultsTable"></tbody>
+        <tbody id="resultsTable">
+            <tr><td colspan="4" style="text-align:center;">Cargando datos...</td></tr>
+        </tbody>
     </table>
 </div>
 
 <div id="firmaModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" id="closeModal">&times;</span>
-        <h3 id="modalTitle">Firma Digital</h3>
-        <p id="modalInfo" style="color: #666;"></p>
-        <img id="imgFirma" class="firma-preview" src="" alt="Firma">
+        <span style="position:absolute;right:20px;cursor:pointer;font-size:24px;" onclick="document.getElementById('firmaModal').style.display='none'">&times;</span>
+        <h3>Firma Digital</h3>
+        <img id="imgFirma" class="firma-preview" src="">
     </div>
 </div>
 
@@ -83,103 +70,78 @@
     const db = getFirestore(app);
     let todosLosDeslindes = [];
 
-    // 1. Cargar datos de Firebase
+    // Obtener datos
     const q = query(collection(db, "deslindes"), orderBy("fecha", "desc"));
     onSnapshot(q, (snapshot) => {
         todosLosDeslindes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderTable(todosLosDeslindes);
+    }, (error) => {
+        console.error("Error al obtener datos: ", error);
+        document.getElementById('resultsTable').innerHTML = `<tr><td colspan="4" style="color:red;">Error: Revisa las Reglas de Firebase.</td></tr>`;
     });
 
     function renderTable(data) {
         const tableBody = document.getElementById('resultsTable');
+        if (data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay registros encontrados.</td></tr>';
+            return;
+        }
+        
         tableBody.innerHTML = '';
-
         data.forEach(item => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${item.fecha.split(',')[0]}</td>
+                <td>${item.fecha ? item.fecha.split(',')[0] : 'S/F'}</td>
                 <td><strong>${item.nombre}</strong></td>
                 <td>${item.dni}</td>
-                <td><span class="badge">VIGENTE</span></td>
-                <td class="actions">
-                    <button class="btn btn-view" onclick="verFirma('${item.firma_img}', '${item.nombre}')">Ver</button>
-                    <button class="btn btn-pdf" onclick="generarPDFAdmin('${item.nombre}', '${item.dni}', '${item.fecha}', '${item.firma_img}')">PDF</button>
+                <td>
+                    <button class="btn btn-view" id="v-${item.id}">Ver</button>
+                    <button class="btn btn-pdf" id="p-${item.id}">PDF</button>
                 </td>
             `;
-            tableBody.innerHTML.appendChild(row); // Nota: En JS real usamos appendChild o similar. Corregido abajo:
+            tableBody.appendChild(row);
+
+            // Asignar eventos a los botones de forma segura
+            document.getElementById(`v-${item.id}`).onclick = () => {
+                document.getElementById('imgFirma').src = item.firma_img;
+                document.getElementById('firmaModal').style.display = 'block';
+            };
+
+            document.getElementById(`p-${item.id}`).onclick = () => {
+                generarPDFAdmin(item.nombre, item.dni, item.fecha, item.firma_img);
+            };
         });
-        
-        // Re-mapeo para botones (corrección para innerHTML)
-        tableBody.innerHTML = data.map(item => `
-            <tr>
-                <td>${item.fecha.split(',')[0]}</td>
-                <td><strong>${item.nombre}</strong></td>
-                <td>${item.dni}</td>
-                <td><span class="badge">VIGENTE</span></td>
-                <td class="actions">
-                    <button class="btn btn-view" onclick="verFirma('${item.firma_img}', '${item.nombre}')">🔍 Ver</button>
-                    <button class="btn btn-pdf" onclick="generarPDFAdmin('${item.nombre}', '${item.dni}', '${item.fecha}', '${item.firma_img}')">📄 PDF</button>
-                </td>
-            </tr>
-        `).join('');
     }
 
-    // 2. Buscador
-    document.getElementById('searchInput').addEventListener('input', (e) => {
+    // Buscador
+    document.getElementById('searchInput').oninput = (e) => {
         const term = e.target.value.toLowerCase();
         const filtrados = todosLosDeslindes.filter(d => 
             d.nombre.toLowerCase().includes(term) || d.dni.includes(term)
         );
         renderTable(filtrados);
-    });
-
-    // 3. Ver Firma (Modal)
-    window.verFirma = (imgData, nombre) => {
-        document.getElementById('imgFirma').src = imgData;
-        document.getElementById('modalInfo').innerText = "Jugador: " + nombre;
-        document.getElementById('firmaModal').style.display = "block";
     };
 
-    // 4. GENERAR PDF DESDE ADMIN
-    window.generarPDFAdmin = async (nombre, dni, fecha, firmaImg) => {
+    async function generarPDFAdmin(nombre, dni, fecha, firmaImg) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // Diseño del PDF (Mismo que el formulario para consistencia)
-        doc.setDrawColor(200);
         doc.rect(10, 10, 190, 277);
-        doc.setFont("helvetica", "bold");
         doc.setFontSize(20);
         doc.text("DESLINDE DE RESPONSABILIDAD", 105, 30, { align: "center" });
+        doc.setFontSize(12);
+        doc.text(`Nombre: ${nombre}`, 20, 60);
+        doc.text(`DNI: ${dni}`, 20, 70);
+        doc.text(`Fecha: ${fecha}`, 20, 80);
+        doc.addImage(firmaImg, 'PNG', 20, 100, 60, 25);
         
-        doc.setFontSize(10); doc.setFont("helvetica", "normal");
-        doc.text(`Copia generada por Administración`, 15, 45);
-        doc.text(`Fecha original: ${fecha}`, 15, 50);
-
-        doc.setFontSize(12); doc.setFont("helvetica", "bold");
-        doc.text(`Nombre: ${nombre}`, 20, 75);
-        doc.text(`DNI: ${dni}`, 20, 82);
-
-        doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-        const legalText = "El firmante declara estar en perfectas condiciones de salud para la práctica deportiva del Pádel...";
-        doc.text(doc.splitTextToSize(legalText, 170), 15, 100);
-
-        doc.addImage(firmaImg, 'PNG', 15, 115, 60, 25);
-        doc.line(15, 140, 80, 140);
-        doc.text("FIRMA DEL JUGADOR", 15, 145);
-
-        // Compartir o descargar
         const pdfBlob = doc.output('blob');
         const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
-
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'Deslinde PadelSafe' });
+            await navigator.share({ files: [file], title: 'PDF Deslinde' });
         } else {
             doc.save(`Deslinde_${dni}.pdf`);
         }
-    };
-
-    document.getElementById('closeModal').onclick = () => document.getElementById('firmaModal').style.display = "none";
+    }
 </script>
 
 </body>
