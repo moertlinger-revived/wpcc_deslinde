@@ -3,112 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PadelSafe PRO</title>
+    <title>PadelSafe PRO - WPCC</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
-        
-        .container { 
-            background: white; 
-            padding: 1.5rem; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            width: 100%; 
-            max-width: 420px; 
-            box-sizing: border-box;
-            margin-top: 10px;
-            margin-bottom: 40px;
+        :root {
+            --primary: #27ae60;
+            --secondary: #2c3e50;
+            --bg: #121212;
+            --card: #ffffff;
         }
 
-        h2 { color: #1a1a1a; text-align: center; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.9rem; color: #333; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 15px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh; 
+        }
+        
+        .container { 
+            background: var(--card); 
+            padding: 2rem; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+            width: 100%; 
+            max-width: 440px; 
+            box-sizing: border-box;
+            margin-bottom: 50px;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .logo-container img {
+            max-width: 120px;
+            height: auto;
+        }
+
+        h2 { color: var(--secondary); text-align: center; margin: 0 0 1.5rem 0; font-weight: 700; }
+        
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; color: #444; text-transform: uppercase; letter-spacing: 0.5px; }
         
         input[type="text"] { 
             width: 100%; 
-            padding: 14px; 
-            border: 2px solid #eee; 
-            border-radius: 10px; 
+            padding: 15px; 
+            border: 2px solid #edf2f7; 
+            border-radius: 12px; 
             box-sizing: border-box; 
             font-size: 1rem;
-            transition: border-color 0.3s;
+            background: #f8fafc;
+            transition: all 0.3s;
         }
-        input[type="text"]:focus { border-color: #3498db; outline: none; }
+        input[type="text"]:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1); }
         
-        .legal-box { height: 200px; overflow-y: auto; border: 1px solid #eee; padding: 10px; background: #fafafa; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem; color: #666; }
+        .legal-box { 
+            height: 180px; 
+            overflow-y: auto; 
+            border: 1px solid #e2e8f0; 
+            padding: 15px; 
+            background: #f1f5f9; 
+            border-radius: 12px; 
+            margin-bottom: 1.5rem; 
+            font-size: 0.8rem; 
+            color: #475569; 
+            line-height: 1.6;
+        }
         
-        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 1.2rem; cursor: pointer; font-size: 0.9rem; }
+        .checkbox-group { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-bottom: 1.5rem; 
+            cursor: pointer; 
+            font-size: 0.9rem; 
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--primary); }
         
-        .btn-open-sign { width: 100%; padding: 14px; background: #3498db; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
-        
-        .btn-submit { 
+        .btn-open-sign { 
             width: 100%; 
             padding: 16px; 
-            background: #27ae60; 
+            background: var(--secondary); 
             color: white; 
             border: none; 
-            border-radius: 10px; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: transform 0.2s;
+        }
+        
+        .btn-open-sign:active { transform: scale(0.98); }
+
+        .btn-submit { 
+            width: 100%; 
+            padding: 18px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
             font-size: 1.1rem; 
             font-weight: 700; 
             cursor: pointer; 
             display: none; 
-            margin-top: 15px;
-            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
         }
 
         #sign-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; flex-direction: column; }
-        .canvas-container { flex: 1; position: relative; background: #f9f9f9; }
+        .canvas-container { flex: 1; position: relative; background: #fdfdfd; }
         canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; touch-action: none; }
-        .sign-footer { padding: 20px; display: flex; gap: 10px; background: #fff; border-top: 1px solid #eee; padding-bottom: 30px; }
+        .sign-footer { padding: 25px; display: flex; gap: 15px; background: #fff; border-top: 1px solid #eee; padding-bottom: 40px; }
         
-        .btn-cancel { flex: 1; padding: 15px; background: #95a5a6; color: white; border: none; border-radius: 8px; font-weight: 600; }
-        .btn-done { flex: 2; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: 700; }
+        .btn-cancel { flex: 1; padding: 15px; background: #ef4444; color: white; border: none; border-radius: 10px; font-weight: 600; }
+        .btn-done { flex: 2; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 700; }
         
-        .signature-preview-container { text-align: center; margin: 10px 0; }
-        .signature-preview { width: 150px; height: auto; border: 1px dashed #ccc; border-radius: 4px; padding: 5px; background: #fff; }
+        .signature-preview-container { text-align: center; margin: 20px 0; }
+        .signature-preview { width: 180px; height: auto; border-bottom: 2px solid var(--primary); padding: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📝 PadelSafe</h2>
+    <div class="logo-container">
+        <img src="https://via.placeholder.com/150x80?text=LOGO+WPCC" alt="Logo WPCC" id="img-logo-web">
+    </div>
+    <h2>Registro de Jugador</h2>
     
     <div class="form-group">
-        <label>Nombre y Apellido</label>
-        <input type="text" id="nombre" placeholder="Nombre completo">
+        <label>Nombre Completo</label>
+        <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
     </div>
 
     <div class="form-group">
-        <label>DNI / Documento</label>
-        <input type="text" id="dni" placeholder="Documento">
+        <label>DNI / Pasaporte</label>
+        <input type="text" id="dni" placeholder="Número de documento">
     </div>
 
-    <div id="legal-content" class="legal-box">
-        <p><strong>Acuerdo de Exoneración de Responsabilidad - Circuito WPCC 2026</strong></p>
-        <p>Complejo Deportivo: WORLD PADEL CENTER CONCORDIA</p>
-        <p>1. Asunción de Riesgos: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos (torceduras, fracturas, golpes). El Participante asume voluntariamente todos los riesgos.</p>
-        <p>2. Estado de Salud: El Participante garantiza que se encuentra en condiciones físicas óptimas y no padece ninguna condición médica que le impida participar.</p>
-        <p>3. Servicio de Emergencias: El Complejo cuenta con Área Protegida. Su existencia no implica garantía de indemnidad ni traslada responsabilidad al Complejo.</p>
-        <p>4. Exoneración: El Participante libera de toda responsabilidad civil o penal al Complejo y Organizadores por cualquier lesión física o daño derivado de la práctica deportiva.</p>
+    <div class="legal-box">
+        <strong>Acuerdo de Exoneración de Responsabilidad - Circuito WPCC 2026</strong><br><br>
+        Complejo Deportivo: WORLD PADEL CENTER CONCORDIA<br><br>
+        1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos (torceduras, fracturas, golpes). El Participante asume voluntariamente todos los riesgos.<br><br>
+        2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas y no padece ninguna condición médica que le impida participar.<br><br>
+        3. SERVICIO DE EMERGENCIAS: El Complejo cuenta con Área Protegida. Su existencia no implica garantía de indemnidad ni traslada responsabilidad al Complejo.<br><br>
+        4. EXONERACIÓN: El Participante libera de toda responsabilidad civil o penal al Complejo y Organizadores por cualquier lesión física o daño derivado de la práctica deportiva.
     </div>
 
     <label class="checkbox-group">
-        <input type="checkbox" id="acepto"> <span>Acepto los términos</span>
+        <input type="checkbox" id="acepto"> <span>He leído y acepto los términos</span>
     </label>
     
-    <button type="button" class="btn-open-sign" id="btn-open-sign">🖋️ FIRMAR AHORA</button>
+    <button type="button" class="btn-open-sign" id="btn-open-sign">🖋️ FIRMAR DESLINDE</button>
     
     <div class="signature-preview-container">
         <img id="prev-firma" class="signature-preview" style="display:none;">
     </div>
     
-    <button type="button" class="btn-submit" id="btn-submit">CONFIRMAR Y ENVIAR ✅</button>
+    <button type="button" class="btn-submit" id="btn-submit">FINALIZAR Y ENVIAR ✅</button>
 </div>
 
 <div id="sign-screen">
-    <div style="padding: 15px; text-align: center; font-weight: bold;">FIRME DENTRO DEL RECUADRO</div>
+    <div style="padding: 20px; text-align: center; font-weight: bold; color: var(--secondary);">POR FAVOR, FIRME AQUÍ</div>
     <div class="canvas-container"><canvas id="signature-pad"></canvas></div>
     <div class="sign-footer">
         <button class="btn-cancel" id="btn-close-sign">VOLVER</button>
@@ -119,6 +183,10 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+    // Reemplaza esta URL con el link real de tu logo (formato .png o .jpg)
+    const URL_LOGO = "https://lh3.googleusercontent.com/u/0/d/19HeJsgAOuOmn97XwjqZ36edP9GqT-Bzp";
+
 
     const firebaseConfig = {
         apiKey: "AIzaSyCvB-licXMCGf0aotJOJis-UDETCWi0kTU",
@@ -134,6 +202,9 @@
     const canvas = document.getElementById("signature-pad");
     const signaturePad = new SignaturePad(canvas);
     let firmaBase64 = null;
+
+    // Actualizar logo web
+    document.getElementById('img-logo-web').src = URL_LOGO;
 
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -164,8 +235,7 @@
     document.getElementById('btn-submit').onclick = async () => {
         const nombre = document.getElementById('nombre').value;
         const dni = document.getElementById('dni').value;
-
-        if (!nombre || !dni) return alert("Por favor completa Nombre y DNI antes de enviar");
+        if (!nombre || !dni) return alert("Completa Nombre y DNI");
 
         const btn = document.getElementById('btn-submit');
         btn.disabled = true;
@@ -173,48 +243,55 @@
 
         try {
             await addDoc(collection(db, "deslindes"), {
-                nombre: nombre,
-                dni: dni,
-                fecha: new Date().toLocaleString('es-AR'),
-                firma_img: firmaBase64
+                nombre: nombre, dni: dni, fecha: new Date().toLocaleString('es-AR'), firma_img: firmaBase64
             });
 
-            // LÓGICA DE PDF MEJORADA
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // Título
-            doc.setFontSize(16);
-            doc.text("DESLINDE DE RESPONSABILIDAD", 105, 20, { align: "center" });
-            doc.setFontSize(10);
-            doc.text("CIRCUITO WPCC 2026 - WORLD PADEL CENTER CONCORDIA", 105, 28, { align: "center" });
+            // LOGO EN PDF (Header)
+            try {
+                doc.addImage(URL_LOGO, 'PNG', 85, 10, 40, 20); 
+            } catch(e) { console.log("No se pudo cargar el logo en PDF"); }
 
-            // Texto Legal (Se extrae del div para que sea el mismo)
+            doc.setFontSize(16);
+            doc.setTextColor(44, 62, 80);
+            doc.text("DESLINDE DE RESPONSABILIDAD", 105, 40, { align: "center" });
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text("CIRCUITO WPCC 2026 - WORLD PADEL CENTER CONCORDIA", 105, 46, { align: "center" });
+
             const legalText = `Por la presente, quien suscribe declara conocer y aceptar los términos y condiciones:
             
-1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos (torceduras, fracturas, golpes con la pala o paredes). El Participante asume voluntariamente todos los riesgos asociados con su participación.
+1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos. El Participante asume voluntariamente todos los riesgos asociados con su participación.
 
 2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas y que no padece ninguna condición médica que le impida participar de manera segura.
 
-3. ALCANCE DEL SERVICIO DE EMERGENCIAS: Se informa que el Complejo cuenta con Servicio de Emergencias Médicas (Área Protegida). No obstante, dicho servicio tiene como única finalidad brindar asistencia primaria y traslados de urgencia. Su existencia no implica una garantía de indemnidad ni traslada la responsabilidad de las lesiones al Complejo o a los Organizadores.
+3. ALCANCE DEL SERVICIO DE EMERGENCIAS: Se informa que el Complejo cuenta con Servicio de Emergencias Médicas (Área Protegida). Su existencia no implica garantía de indemnidad.
 
 4. EXONERACIÓN DE RESPONSABILIDAD: El Participante libera de toda responsabilidad civil o penal al Complejo y a los Organizadores por cualquier lesión física o daño derivado de la práctica del deporte o pérdida de pertenencias personales.`;
 
+            doc.setFontSize(9);
             const splitLegal = doc.splitTextToSize(legalText, 170);
-            doc.text(splitLegal, 20, 40);
+            doc.text(splitLegal, 20, 60);
 
-            // Datos del Jugador y Firma (Posicionados abajo del texto legal)
-            const finalY = 45 + (splitLegal.length * 5); // Calcula donde termina el texto
+            const finalY = 65 + (splitLegal.length * 5);
             
             doc.setFontSize(12);
+            doc.setTextColor(0);
             doc.text(`Nombre Completo: ${nombre}`, 20, finalY + 10);
-            doc.text(`DNI: ${dni}`, 20, finalY + 20);
-            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, 20, finalY + 30);
+            doc.text(`DNI: ${dni}`, 20, finalY + 18);
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, 20, finalY + 26);
             
-            doc.text("Firma del Participante:", 20, finalY + 45);
-            doc.addImage(firmaBase64, 'PNG', 20, finalY + 50, 60, 25);
+            doc.setFontSize(10);
+            doc.text("Firma Digital del Participante:", 20, finalY + 40);
+            doc.addImage(firmaBase64, 'PNG', 20, finalY + 45, 60, 25);
+            
+            // Línea decorativa final
+            doc.setDrawColor(39, 174, 96);
+            doc.line(20, finalY + 75, 190, finalY + 75);
 
-            // Compartir o Guardar
             const pdfBlob = doc.output('blob');
             const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
             
@@ -228,9 +305,8 @@
             window.location.reload();
 
         } catch (e) {
-            alert("Error de conexión. Intente nuevamente.");
+            alert("Error de conexión.");
             btn.disabled = false;
-            btn.innerText = "CONFIRMAR Y ENVIAR ✅";
         }
     };
 </script>
