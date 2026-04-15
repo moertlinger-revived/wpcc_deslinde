@@ -3,57 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PadelSafe PRO - Firma Digital</title>
+    <title>PadelSafe - Registro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #eef2f3; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; margin: 15px; }
-        h2 { color: #1a1a1a; margin: 0 0 10px 0; text-align: center; font-size: 1.5rem; }
-        .status-bar { height: 4px; width: 50px; background: #27ae60; margin: 0 auto 20px auto; border-radius: 2px; }
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; margin: 10px; }
+        h2 { color: #1a1a1a; text-align: center; margin-bottom: 20px; }
         .form-group { margin-bottom: 1.2rem; }
-        label { display: block; margin-bottom: 0.4rem; font-weight: 600; color: #444; font-size: 0.9rem; }
-        input { width: 100%; padding: 12px; border: 1px solid #dce4e2; border-radius: 8px; box-sizing: border-box; font-size: 1rem; transition: border 0.3s; }
-        input:focus { border-color: #27ae60; outline: none; }
-        .legal-box { height: 100px; overflow-y: auto; border: 1px solid #f0f0f0; padding: 12px; background: #fafafa; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.8rem; color: #777; line-height: 1.4; }
-        .signature-container { border: 2px dashed #cbd5e0; border-radius: 10px; background: #fff; margin-bottom: 0.5rem; }
-        canvas { width: 100%; height: 180px; touch-action: none; cursor: crosshair; }
-        .btn-submit { width: 100%; padding: 16px; background: #1a1a1a; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s; margin-top: 10px; }
-        .btn-submit:active { transform: scale(0.98); }
-        .btn-clear { background: none; border: none; color: #999; font-size: 0.75rem; text-decoration: underline; cursor: pointer; float: right; margin-bottom: 10px; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        .legal-box { height: 100px; overflow-y: auto; border: 1px solid #eee; padding: 10px; background: #fafafa; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem; color: #666; }
+        .signature-container { border: 2px dashed #ccc; border-radius: 8px; background: #fff; margin-bottom: 5px; }
+        canvas { width: 100%; height: 180px; touch-action: none; }
+        .btn-submit { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-submit:disabled { background: #95a5a6; }
+        .btn-clear { background: none; border: none; color: #e74c3c; font-size: 0.8rem; text-decoration: underline; cursor: pointer; float: right; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>PadelSafe PRO</h2>
-    <div class="status-bar"></div>
-    
+    <h2>📝 Deslinde PadelSafe</h2>
     <div class="form-group">
-        <label>Nombre y Apellido</label>
-        <input type="text" id="nombre" placeholder="Nombre completo">
+        <label>Nombre Completo</label>
+        <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
     </div>
-
     <div class="form-group">
-        <label>DNI / Documento</label>
-        <input type="text" id="dni" placeholder="Número de identidad">
+        <label>DNI / Pasaporte</label>
+        <input type="text" id="dni" placeholder="Ingrese su documento">
     </div>
-
     <div class="legal-box">
-        <strong>DESLINDE DE RESPONSABILIDAD:</strong><br>
-        Por la presente, el firmante acepta que la práctica de pádel conlleva riesgos físicos. Declara estar apto médicamente y libera al establecimiento de toda responsabilidad por lesiones, accidentes o daños materiales sufridos dentro de las instalaciones. Este documento tiene validez legal de declaración jurada.
+        Declaro estar en perfectas condiciones de salud para jugar al pádel y libero al club de toda responsabilidad por lesiones o accidentes.
     </div>
-
-    <label>Firme dentro del recuadro</label>
+    <label>Firme aquí</label>
     <div class="signature-container">
         <canvas id="signature-pad"></canvas>
     </div>
-    <button class="btn-clear" id="clear-button">Limpiar firma</button>
-
-    <button class="btn-submit" id="submit-button">FIRMAR Y GENERAR PDF</button>
+    <button class="btn-clear" id="clear-button">Borrar Firma</button>
+    <button class="btn-submit" id="submit-button">CONFIRMAR Y FIRMAR</button>
 </div>
 
 <script type="module">
@@ -85,21 +74,21 @@
     window.onresize = resizeCanvas;
     resizeCanvas();
 
-    document.getElementById('clear-button').addEventListener('click', () => signaturePad.clear());
+    document.getElementById('clear-button').onclick = () => signaturePad.clear();
 
-    document.getElementById('submit-button').addEventListener('click', async () => {
+    document.getElementById('submit-button').onclick = async () => {
         const { jsPDF } = window.jspdf;
         const nombre = document.getElementById('nombre').value;
         const dni = document.getElementById('dni').value;
 
         if (!nombre || !dni || signaturePad.isEmpty()) {
-            alert("⚠️ Por favor complete todos los datos y la firma.");
+            alert("⚠️ Por favor completa todos los datos.");
             return;
         }
 
         const btn = document.getElementById('submit-button');
-        btn.innerText = "PROCESANDO...";
         btn.disabled = true;
+        btn.innerText = "GUARDANDO...";
 
         const firmaImg = signaturePad.toDataURL();
         const fecha = new Date().toLocaleString('es-AR');
@@ -110,68 +99,38 @@
                 nombre, dni, fecha, firma_img: firmaImg, firmado: true
             });
 
-            // 2. GENERAR PDF PROFESIONAL
+            // 2. GENERAR PDF
             const doc = new jsPDF();
-            
-            // Estética del PDF
-            doc.setDrawColor(200);
-            doc.rect(10, 10, 190, 277); // Borde de página
-            
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(20);
-            doc.text("DESLINDE DE RESPONSABILIDAD", 105, 30, { align: "center" });
-            
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            doc.text(`ID Documento: PS-${Math.floor(Math.random()*1000000)}`, 15, 45);
-            doc.text(`Fecha y Hora: ${fecha}`, 15, 50);
+            doc.text("DESLINDE DE RESPONSABILIDAD", 105, 20, { align: "center" });
+            doc.text(`Jugador: ${nombre}`, 20, 40);
+            doc.text(`DNI: ${dni}`, 20, 50);
+            doc.text(`Fecha: ${fecha}`, 20, 60);
+            doc.addImage(firmaImg, 'PNG', 20, 70, 60, 25);
 
-            doc.setFontSize(12);
-            doc.text("DATOS DEL JUGADOR:", 15, 65);
-            doc.setFont("helvetica", "bold");
-            doc.text(`Nombre: ${nombre}`, 20, 75);
-            doc.text(`DNI: ${dni}`, 20, 82);
-
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            const legalText = "El firmante declara estar en perfectas condiciones de salud para la práctica deportiva del Pádel. Libera al club y a los organizadores de toda responsabilidad por lesiones, accidentes o pérdida de objetos personales durante su estadía en las instalaciones. El jugador asume total responsabilidad por su integridad física.";
-            const splitText = doc.splitTextToSize(legalText, 170);
-            doc.text(splitText, 15, 100);
-
-            doc.setDrawColor(0);
-            doc.line(15, 140, 80, 140); // Línea de firma
-            doc.text("FIRMA DEL JUGADOR", 15, 145);
-            doc.addImage(firmaImg, 'PNG', 15, 115, 60, 25);
-
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text("Generado por PadelSafe PRO - Sistema de Gestión Documental", 105, 280, { align: "center" });
-
-            // 3. ENVIAR / COMPARTIR
-            const pdfBlob = doc.output('blob');
-            const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
-
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Deslinde PadelSafe',
-                    text: `Hola! Aquí tienes el deslinde firmado de ${nombre}.`
-                });
-            } else {
+            // 3. INTENTAR COMPARTIR O DESCARGAR
+            try {
+                const pdfBlob = doc.output('blob');
+                const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
+                
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: 'Tu Deslinde' });
+                } else {
+                    doc.save(`Deslinde_${dni}.pdf`);
+                }
+            } catch (sErr) {
                 doc.save(`Deslinde_${dni}.pdf`);
-                alert("✅ Registro guardado. El PDF se ha descargado.");
             }
 
+            alert("✅ ¡Registro Exitoso!");
             location.reload();
 
         } catch (e) {
             console.error(e);
-            alert("Error al conectar con Firebase. Revisa la consola.");
-            btn.innerText = "FIRMAR Y GENERAR PDF";
+            alert("Error al conectar con la base de datos.");
             btn.disabled = false;
+            btn.innerText = "CONFIRMAR Y FIRMAR";
         }
-    });
+    };
 </script>
-
 </body>
 </html>
