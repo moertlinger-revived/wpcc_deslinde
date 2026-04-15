@@ -18,20 +18,18 @@
         .checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1.5rem; cursor: pointer; font-size: 0.9rem; }
         .checkbox-group input { margin-top: 3px; }
         
-        /* Botones Principales */
         .btn-open-sign { width: 100%; padding: 14px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
         .btn-submit { width: 100%; padding: 16px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: none; }
         
-        /* Pantalla de Firma Fullscreen */
         #sign-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; z-index: 1000; flex-direction: column; }
         .sign-header { padding: 20px; text-align: center; background: #f8f9fa; border-bottom: 1px solid #ddd; }
-        .canvas-container { flex: 1; position: relative; background: #fff; cursor: crosshair; }
+        .canvas-container { flex: 1; position: relative; background: #fff; }
         canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; touch-action: none; }
         .sign-footer { padding: 20px; display: flex; gap: 10px; background: #f8f9fa; border-top: 1px solid #ddd; }
         .btn-cancel { flex: 1; padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: 600; }
         .btn-done { flex: 2; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: 700; }
 
-        .signature-preview { width: 100px; height: 50px; border: 1px solid #ddd; display: none; margin: 10px auto; border-radius: 4px; }
+        .signature-preview { width: 120px; height: auto; border: 1px solid #ddd; display: none; margin: 15px auto; border-radius: 4px; background: #fff; }
     </style>
 </head>
 <body>
@@ -61,14 +59,15 @@
 
     <button type="button" class="btn-open-sign" id="btn-open-sign">🖋️ FIRMAR AHORA</button>
     
-    <img id="prev-firma" class="signature-preview" alt="Vista previa firma">
+    <div style="text-align: center;">
+        <img id="prev-firma" class="signature-preview" alt="Vista previa firma">
+    </div>
+    
     <button type="button" class="btn-submit" id="btn-submit">ENVIAR REGISTRO</button>
 </div>
 
 <div id="sign-screen">
-    <div class="sign-header">
-        <strong>Gire el dispositivo si es necesario para firmar mejor</strong>
-    </div>
+    <div class="sign-header"><strong>Firme en la pantalla</strong></div>
     <div class="canvas-container">
         <canvas id="signature-pad"></canvas>
     </div>
@@ -98,7 +97,6 @@
     const signaturePad = new SignaturePad(canvas);
     let firmaGuardadaBase64 = null;
 
-    // Ajustar canvas al tamaño de la pantalla
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
@@ -107,10 +105,9 @@
         signaturePad.clear();
     }
 
-    // Lógica de Pantallas
     document.getElementById('btn-open-sign').onclick = () => {
         if (!document.getElementById('acepto').checked) {
-            alert("❌ Debes aceptar los términos y condiciones primero.");
+            alert("❌ Debes aceptar los términos y condiciones.");
             return;
         }
         document.getElementById('sign-screen').style.display = 'flex';
@@ -124,40 +121,35 @@
 
     document.getElementById('btn-save-sign').onclick = () => {
         if (signaturePad.isEmpty()) {
-            alert("Por favor, realice su firma.");
+            alert("Por favor, firme.");
             return;
         }
         firmaGuardadaBase64 = signaturePad.toDataURL();
         document.getElementById('prev-firma').src = firmaGuardadaBase64;
         document.getElementById('prev-firma').style.display = 'block';
         document.getElementById('btn-submit').style.display = 'block';
-        document.getElementById('btn-open-sign').innerText = "🖋️ CAMBIAR FIRMA";
+        document.getElementById('btn-open-sign').innerText = "🖋️ RE-HACER FIRMA";
         document.getElementById('sign-screen').style.display = 'none';
     };
 
-    // Envío Final a Firebase
     document.getElementById('btn-submit').onclick = async () => {
         const nombre = document.getElementById('nombre').value;
         const dni = document.getElementById('dni').value;
-
-        if (!nombre || !dni) {
-            alert("⚠️ Completa Nombre y DNI.");
-            return;
-        }
+        if (!nombre || !dni) { alert("Complete datos."); return; }
 
         const btn = document.getElementById('btn-submit');
-        btn.innerText = "PROCESANDO...";
+        btn.innerText = "⏳ GUARDANDO...";
         btn.disabled = true;
 
         try {
             const fecha = new Date().toLocaleString('es-AR');
             
-            // 1. Guardar en Firestore
+            // 1. PRIMERO GUARDAR EN BASE DE DATOS (Éxito garantizado aquí)
             await addDoc(collection(db, "deslindes"), {
                 nombre, dni, fecha, firma_img: firmaGuardadaBase64, firmado: true
             });
 
-            // 2. Generar PDF y Compartir
+            // 2. GENERAR PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             doc.text("DESLINDE PADELSAFE", 105, 20, { align: "center" });
@@ -165,26 +157,32 @@
             doc.text(`DNI: ${dni}`, 20, 50);
             doc.addImage(firmaGuardadaBase64, 'PNG', 20, 60, 60, 25);
             
-            const pdfBlob = doc.output('blob');
-            const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
-
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: 'Deslinde PadelSafe' });
-            } else {
+            // 3. INTENTAR COMPARTIR SIN QUE EL ERROR AFECTE EL FLUJO
+            try {
+                const pdfBlob = doc.output('blob');
+                const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: 'Deslinde' });
+                } else {
+                    doc.save(`Deslinde_${dni}.pdf`);
+                }
+            } catch (shareErr) {
+                // Si compartir falla, simplemente descargamos el PDF
+                console.log("Menú compartir omitido/fallido");
                 doc.save(`Deslinde_${dni}.pdf`);
             }
 
-            alert("✅ Registro guardado con éxito.");
+            // 4. MENSAJE FINAL INDEPENDIENTE
+            alert("✅ ¡Registro guardado con éxito en la base de datos!");
             location.reload();
 
         } catch (e) {
             console.error(e);
-            alert("Error al guardar. Revisa la conexión.");
+            alert("❌ Error de conexión con Firebase.");
             btn.disabled = false;
             btn.innerText = "ENVIAR REGISTRO";
         }
     };
 </script>
-
 </body>
 </html>
