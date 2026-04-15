@@ -5,43 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin - PadelSafe PRO</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
-        :root { --primary: #27ae60; --secondary: #2c3e50; }
-        body { font-family: 'Inter', sans-serif; background: #f0f2f5; padding: 15px; margin: 0; }
-        .box { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        h1 { color: var(--secondary); margin: 0 0 20px 0; font-weight: 700; font-size: 1.4rem; text-align: center; }
-        
-        /* Herramientas de Informe */
+        :root { 
+            --primary: #27ae60; 
+            --secondary: #2c3e50; 
+            --bg: #f0f2f5;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            padding: 15px; 
+            margin: 0; 
+            color: var(--secondary);
+        }
+
+        .box { 
+            max-width: 900px; 
+            margin: auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+        }
+
+        h1 { 
+            margin: 0 0 20px 0; 
+            font-weight: 700; 
+            font-size: 1.4rem; 
+            text-align: center; 
+        }
+
+        /* Herramientas de Reporte */
         .admin-tools { 
-            background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
+            background: #f8fafc; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
             border: 1px solid #e2e8f0;
         }
-        .tool-title { display: block; font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
-        .date-inputs { display: flex; gap: 10px; margin-bottom: 10px; }
-        .date-inputs input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; font-family: inherit; }
-        
-        input#busqueda { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #edf2f7; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
-        input#busqueda:focus { border-color: var(--primary); }
 
-        /* Tabla y Adaptabilidad */
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; padding: 12px; text-align: left; border-bottom: 2px solid #edf2f7; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .tool-title { 
+            display: block; 
+            font-weight: 700; 
+            font-size: 0.75rem; 
+            color: #64748b; 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            letter-spacing: 0.5px; 
+        }
 
-        .btn { border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.2s; text-transform: uppercase; }
-        .btn-pdf { background: var(--primary); color: white; width: 100%; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-report { background: var(--secondary); color: white; width: 100%; }
-        .btn:active { transform: scale(0.96); opacity: 0.9; }
+        .date-inputs { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 10px; 
+        }
 
+        .date-inputs input { 
+            flex: 1; 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: 1px solid #ddd; 
+            font-size: 14px; 
+            font-family: inherit; 
+        }
+
+        /* Buscador */
+        input#busqueda { 
+            width: 100%; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border: 2px solid #edf2f7; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            outline: none; 
+            transition: border-color 0.3s;
+        }
+
+        input#busqueda:focus { 
+            border-color: var(--primary); 
+        }
+
+        /* Tabla Responsiva */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+
+        th { 
+            background: #f8fafc; 
+            color: #64748b; 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            letter-spacing: 1px; 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 2px solid #edf2f7; 
+        }
+
+        td { 
+            padding: 12px; 
+            border-bottom: 1px solid #eee; 
+            font-size: 0.9rem; 
+        }
+
+        /* Botones */
+        .btn { 
+            border: none; 
+            padding: 10px 15px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            transition: 0.2s; 
+            text-transform: uppercase; 
+        }
+
+        .btn-pdf { 
+            background: var(--primary); 
+            color: white; 
+            width: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 5px; 
+        }
+
+        .btn-report { 
+            background: var(--secondary); 
+            color: white; 
+            width: 100%; 
+        }
+
+        .btn:active { 
+            transform: scale(0.96); 
+            opacity: 0.9; 
+        }
+
+        /* Adaptación móvil (Formato de Tarjetas) */
         @media screen and (max-width: 600px) {
             thead { display: none; }
-            tr { display: block; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 15px; padding: 12px; }
-            td { display: block; text-align: right; padding: 8px 0; border: none; }
-            td::before { content: attr(data-label); float: left; font-weight: 700; color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; }
-            td:last-child { border-top: 1px solid #f1f5f9; margin-top: 8px; padding-top: 12px; }
-            .date-inputs { flex-direction: column; }
+            tr { 
+                display: block; 
+                background: #fff; 
+                border: 1px solid #e2e8f0; 
+                border-radius: 12px; 
+                margin-bottom: 15px; 
+                padding: 12px; 
+            }
+            td { 
+                display: block; 
+                text-align: right; 
+                padding: 8px 0; 
+                border: none; 
+            }
+            td::before { 
+                content: attr(data-label); 
+                float: left; 
+                font-weight: 700; 
+                color: #94a3b8; 
+                font-size: 0.7rem; 
+                text-transform: uppercase; 
+            }
+            td:last-child { 
+                border-top: 1px solid #f1f5f9; 
+                margin-top: 8px; 
+                padding-top: 12px; 
+            }
+            .date-inputs { 
+                flex-direction: column; 
+            }
         }
     </style>
 </head>
@@ -67,7 +205,7 @@
                 <th>Fecha</th>
                 <th>Jugador</th>
                 <th>DNI</th>
-                <th>Ficha</th>
+                <th>Acción</th>
             </tr>
         </thead>
         <tbody id="tabla"></tbody>
@@ -78,7 +216,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+    // --- CONFIGURACIÓN ---
     const URL_LOGO = "https://lh3.googleusercontent.com/u/0/d/1FR97joQ6vlgTvgK18uO-7Mg3ab9q4LPZ";
+
     const firebaseConfig = {
         apiKey: "AIzaSyCvB-licXMCGf0aotJOJis-UDETCWi0kTU",
         authDomain: "padel-safe-pro.firebaseapp.com",
@@ -92,12 +232,13 @@
     const db = getFirestore(app);
     let registros = [];
 
-    // Carga de datos
+    // Cargar datos en tiempo real de Firebase
     onSnapshot(query(collection(db, "deslindes"), orderBy("fecha", "desc")), (snap) => {
         registros = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         dibujarTabla(registros);
     });
 
+    // Función para renderizar la tabla/tarjetas
     function dibujarTabla(datos) {
         const t = document.getElementById('tabla');
         t.innerHTML = datos.map((r, i) => `
@@ -115,38 +256,49 @@
         });
     }
 
-    // --- GENERAR INFORME RESUMIDO (TABLA) ---
+    // --- LÓGICA DE INFORME POR RANGO DE FECHAS ---
     document.getElementById('btn-generar-informe').onclick = () => {
         const d = document.getElementById('fecha-desde').value;
         const h = document.getElementById('fecha-hasta').value;
+        
         if (!d || !h) return alert("Selecciona el rango de fechas");
 
+        // Normalizamos las fechas seleccionadas
         const fDesde = new Date(d + "T00:00:00");
         const fHasta = new Date(h + "T23:59:59");
 
         const filtrados = registros.filter(r => {
-            const [dia, mes, anio] = r.fecha.split(',')[0].split('/');
-            const fReg = new Date(`${anio}-${mes}-${dia}T12:00:00`);
+            // Convertimos la fecha guardada "DD/MM/AAAA" a objeto Date comparable
+            const fechaParte = r.fecha.split(',')[0]; 
+            const [dia, mes, anio] = fechaParte.split('/');
+            const fReg = new Date(anio, mes - 1, dia); // Mes - 1 por índice 0 en JS
+
             return fReg >= fDesde && fReg <= fHasta;
         });
 
-        if (filtrados.length === 0) return alert("No hay registros.");
+        if (filtrados.length === 0) {
+            return alert("No se encontraron registros para ese rango.");
+        }
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        
         doc.setFontSize(16);
         doc.text("REPORTE DE JUGADORES REGISTRADOS", 105, 20, { align: "center" });
         doc.setFontSize(10);
-        doc.text(`Desde: ${d} Hasta: ${h}`, 105, 27, { align: "center" });
+        doc.text(`Rango: ${d} al ${h}`, 105, 28, { align: "center" });
 
-        const body = filtrados.map(r => [r.fecha.split(',')[0], r.nombre, r.dni, "FIRMADO"]);
+        const body = filtrados.map(r => [r.fecha.split(',')[0], r.nombre, r.dni, "SI"]);
+        
         doc.autoTable({
             startY: 35,
-            head: [['Fecha', 'Jugador', 'DNI', 'Estado']],
+            head: [['Fecha', 'Jugador', 'DNI', 'Firma']],
             body: body,
-            headStyles: { fillColor: [44, 62, 80] }
+            headStyles: { fillColor: [44, 62, 80] },
+            theme: 'striped'
         });
-        doc.save(`Reporte_${d}_a_${h}.pdf`);
+
+        doc.save(`Reporte_WPCC_${d}_a_${h}.pdf`);
     };
 
     // --- EXPORTAR FICHA INDIVIDUAL COMPLETA (CON TEXTO LEGAL) ---
@@ -154,8 +306,10 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        try { doc.addImage(URL_LOGO, 'PNG', 85, 10, 30, 25); } catch(e) {}
+        // 1. Logo
+        try { doc.addImage(URL_LOGO, 'PNG', 85, 10, 30, 25); } catch(e) { console.warn("Logo no disponible"); }
 
+        // 2. Títulos
         doc.setFontSize(16);
         doc.setTextColor(44, 62, 80);
         doc.text("DESLINDE DE RESPONSABILIDAD", 105, 45, { align: "center" });
@@ -164,6 +318,7 @@
         doc.setTextColor(100);
         doc.text("CIRCUITO WPCC 2026 - WORLD PADEL CENTER CONCORDIA", 105, 51, { align: "center" });
 
+        // 3. Texto Legal Completo
         const legalText = `Por la presente, quien suscribe declara conocer y aceptar los términos y condiciones:
             
 1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos. El Participante asume voluntariamente todos los riesgos asociados con su participación.
@@ -179,6 +334,7 @@
         const splitLegal = doc.splitTextToSize(legalText, 170);
         doc.text(splitLegal, 20, 65);
 
+        // 4. Datos del Jugador
         const finalY = 70 + (splitLegal.length * 5);
         
         doc.setFontSize(12);
@@ -187,22 +343,29 @@
         doc.text(`DNI: ${r.dni}`, 20, finalY + 18);
         doc.text(`Fecha de Firma: ${r.fecha}`, 20, finalY + 26);
         
+        // 5. Firma Digital
         doc.setFontSize(10);
         doc.text("Firma del Participante:", 20, finalY + 40);
         if(r.firma_img) {
             doc.addImage(r.firma_img, 'PNG', 20, finalY + 45, 60, 25);
         }
 
+        // 6. Línea estética final
         doc.setDrawColor(39, 174, 96);
         doc.line(20, finalY + 75, 190, finalY + 75);
 
+        // Descarga
         doc.save(`Ficha_${r.dni}_${r.nombre.replace(/\s+/g, '_')}.pdf`);
     }
 
-    // Buscador
+    // Buscador interactivo
     document.getElementById('busqueda').oninput = (e) => {
         const v = e.target.value.toLowerCase();
-        dibujarTabla(registros.filter(r => r.nombre.toLowerCase().includes(v) || r.dni.includes(v)));
+        const filtrados = registros.filter(r => 
+            r.nombre.toLowerCase().includes(v) || 
+            r.dni.includes(v)
+        );
+        dibujarTabla(filtrados);
     };
 </script>
 </body>
