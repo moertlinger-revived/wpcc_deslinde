@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PadelSafe PRO - Registro</title>
+    <title>PadelSafe PRO - Registro 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -81,6 +81,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+    // Tu configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCvB-licXMCGf0aotJOJis-UDETCWi0kTU",
         authDomain: "padel-safe-pro.firebaseapp.com",
@@ -105,6 +106,7 @@
         signaturePad.clear();
     }
 
+    // Manejo de la pantalla de firma
     document.getElementById('btn-open-sign').onclick = () => {
         if (!document.getElementById('acepto').checked) {
             alert("❌ Debes aceptar los términos y condiciones.");
@@ -132,19 +134,20 @@
         document.getElementById('sign-screen').style.display = 'none';
     };
 
+    // Envío Final
     document.getElementById('btn-submit').onclick = async () => {
         const nombre = document.getElementById('nombre').value;
         const dni = document.getElementById('dni').value;
-        if (!nombre || !dni) { alert("Complete datos."); return; }
+        if (!nombre || !dni) { alert("Complete todos los campos."); return; }
 
         const btn = document.getElementById('btn-submit');
-        btn.innerText = "⏳ GUARDANDO...";
+        btn.innerText = "⏳ GUARDANDO REGISTRO...";
         btn.disabled = true;
 
         try {
             const fecha = new Date().toLocaleString('es-AR');
             
-            // 1. PRIMERO GUARDAR EN BASE DE DATOS (Éxito garantizado aquí)
+            // 1. GUARDAR EN FIREBASE
             await addDoc(collection(db, "deslindes"), {
                 nombre, dni, fecha, firma_img: firmaGuardadaBase64, firmado: true
             });
@@ -152,33 +155,36 @@
             // 2. GENERAR PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("DESLINDE PADELSAFE", 105, 20, { align: "center" });
+            doc.text("DESLINDE DE RESPONSABILIDAD - PADELSAFE", 105, 20, { align: "center" });
             doc.text(`Jugador: ${nombre}`, 20, 40);
             doc.text(`DNI: ${dni}`, 20, 50);
-            doc.addImage(firmaGuardadaBase64, 'PNG', 20, 60, 60, 25);
+            doc.text(`Fecha: ${fecha}`, 20, 60);
+            doc.addImage(firmaGuardadaBase64, 'PNG', 20, 70, 60, 25);
             
-            // 3. INTENTAR COMPARTIR SIN QUE EL ERROR AFECTE EL FLUJO
+            // 3. PROCESO DE COMPARTIR / DESCARGAR (Blindado)
             try {
                 const pdfBlob = doc.output('blob');
                 const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
+                
                 if (navigator.share && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'Deslinde' });
+                    // Abrimos el menú de compartir (WhatsApp)
+                    await navigator.share({ files: [file], title: 'Tu Deslinde PadelSafe' });
                 } else {
+                    // Si no puede compartir (ej. PC), descarga directo
                     doc.save(`Deslinde_${dni}.pdf`);
                 }
             } catch (shareErr) {
-                // Si compartir falla, simplemente descargamos el PDF
-                console.log("Menú compartir omitido/fallido");
+                // Si el usuario cancela o hay error de navegador, solo descargamos
                 doc.save(`Deslinde_${dni}.pdf`);
             }
 
-            // 4. MENSAJE FINAL INDEPENDIENTE
-            alert("✅ ¡Registro guardado con éxito en la base de datos!");
-            location.reload();
+            // 4. RESETEO FINAL PARA EL SIGUIENTE JUGADOR
+            alert("✅ ¡Registro Exitoso! El sistema volverá al inicio para el siguiente jugador.");
+            location.reload(); // Esto limpia todo y vuelve a la pantalla inicial
 
         } catch (e) {
             console.error(e);
-            alert("❌ Error de conexión con Firebase.");
+            alert("❌ Error crítico de conexión. Intente nuevamente.");
             btn.disabled = false;
             btn.innerText = "ENVIAR REGISTRO";
         }
