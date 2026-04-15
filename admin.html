@@ -6,67 +6,36 @@
     <title>Admin - PadelSafe</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root {
-            --primary: #27ae60;
-            --secondary: #2c3e50;
-        }
-
+        :root { --primary: #27ae60; --secondary: #2c3e50; }
         body { font-family: 'Inter', sans-serif; background: #f0f2f5; padding: 15px; margin: 0; }
-        
         .box { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        
         h1 { color: var(--secondary); margin-bottom: 20px; font-weight: 700; font-size: 1.5rem; text-align: center; }
         
-        input { 
-            width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid #ddd; 
-            border-radius: 8px; box-sizing: border-box; font-size: 16px; /* Evita zoom automático en iPhone */
+        .admin-tools { 
+            background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; 
+            border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 10px;
         }
+        .date-inputs { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+        .date-inputs input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        
+        input#busqueda { width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
 
-        /* DISEÑO RESPONSIVE: De tabla a tarjetas */
         table { width: 100%; border-collapse: collapse; }
         th { background: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
 
         .btn { border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s; }
         .btn-pdf { background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; }
-        
-        /* Ajustes para Celulares */
+        .btn-report { background: var(--secondary); color: white; width: 100%; margin-top: 5px; }
+
         @media screen and (max-width: 600px) {
-            .box { padding: 15px; }
-            
-            /* Ocultamos el encabezado de la tabla en móvil */
             thead { display: none; }
-            
-            /* Convertimos cada fila en una tarjeta */
-            tr { 
-                display: block; 
-                background: #fff; 
-                border: 1px solid #e2e8f0; 
-                border-radius: 10px; 
-                margin-bottom: 15px; 
-                padding: 10px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            }
-            
-            td { 
-                display: block; 
-                text-align: right; 
-                padding: 8px 5px; 
-                border-bottom: none;
-            }
-
-            /* Creamos etiquetas para identificar los datos en la tarjeta */
-            td::before {
-                content: attr(data-label);
-                float: left;
-                font-weight: 700;
-                color: #64748b;
-                text-transform: uppercase;
-                font-size: 0.7rem;
-            }
-
-            td:last-child { border-top: 1px solid #f1f5f9; margin-top: 5px; padding-top: 15px; }
+            tr { display: block; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px; padding: 10px; }
+            td { display: block; text-align: right; padding: 8px 5px; }
+            td::before { content: attr(data-label); float: left; font-weight: 700; color: #64748b; text-transform: uppercase; font-size: 0.7rem; }
+            .date-inputs { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
@@ -74,6 +43,16 @@
 
 <div class="box">
     <h1>Panel de Control</h1>
+
+    <div class="admin-tools">
+        <span style="font-weight: 700; font-size: 0.8rem; color: var(--secondary);">GENERAR INFORME POR FECHAS</span>
+        <div class="date-inputs">
+            <input type="date" id="fecha-desde">
+            <input type="date" id="fecha-hasta">
+        </div>
+        <button class="btn btn-report" id="btn-generar-informe">📊 DESCARGAR REPORTE PDF</button>
+    </div>
+
     <input type="text" id="busqueda" placeholder="🔍 Buscar por DNI o Nombre...">
     
     <table>
@@ -93,9 +72,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-    // --- CONFIGURACIÓN ---
     const URL_LOGO = "https://lh3.googleusercontent.com/u/0/d/1FR97joQ6vlgTvgK18uO-7Mg3ab9q4LPZ";
-
     const firebaseConfig = {
         apiKey: "AIzaSyCvB-licXMCGf0aotJOJis-UDETCWi0kTU",
         authDomain: "padel-safe-pro.firebaseapp.com",
@@ -116,81 +93,89 @@
 
     function dibujarTabla(datos) {
         const t = document.getElementById('tabla');
-        // El atributo data-label es lo que permite que en móvil se vea el texto "JUGADOR:", "DNI:", etc.
         t.innerHTML = datos.map((r, i) => `
             <tr>
-                <td data-label="Fecha" style="font-size: 0.8rem; color: #666;">${r.fecha.split(',')[0]}</td>
+                <td data-label="Fecha">${r.fecha.split(',')[0]}</td>
                 <td data-label="Jugador" style="font-weight: 600;">${r.nombre}</td>
                 <td data-label="DNI">${r.dni}</td>
-                <td><button class="btn btn-pdf" id="btn-${i}">📄 DESCARGAR PDF</button></td>
+                <td><button class="btn btn-pdf" id="btn-${i}">📄 PDF</button></td>
             </tr>
         `).join('');
 
         datos.forEach((r, i) => {
             const btn = document.getElementById(`btn-${i}`);
-            if(btn) btn.onclick = () => exportarPDF(r);
+            if(btn) btn.onclick = () => exportarFichaIndividual(r);
         });
+    }
+
+    // --- FUNCIÓN DE INFORME POR RANGO ---
+    document.getElementById('btn-generar-informe').onclick = () => {
+        const desde = document.getElementById('fecha-desde').value;
+        const hasta = document.getElementById('fecha-hasta').value;
+
+        if (!desde || !hasta) return alert("Por favor selecciona ambas fechas");
+
+        // Convertir strings de fecha para comparar
+        const fDesde = new Date(desde + "T00:00:00");
+        const fHasta = new Date(hasta + "T23:59:59");
+
+        const filtrados = registros.filter(r => {
+            // Firebase guarda fecha como "DD/MM/AAAA, HH:MM:SS" o similar
+            // Necesitamos convertir r.fecha a un objeto Date comparable
+            const [dia, mes, anio] = r.fecha.split(',')[0].split('/');
+            const fechaRegistro = new Date(`${anio}-${mes}-${dia}T12:00:00`);
+            return fechaRegistro >= fDesde && fechaRegistro <= fHasta;
+        });
+
+        if (filtrados.length === 0) return alert("No hay registros en ese rango de fechas.");
+
+        generarPDFMasivo(filtrados, desde, hasta);
+    };
+
+    function generarPDFMasivo(datos, d, h) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(18);
+        doc.text("INFORME DE DESLINDES FIRMADOS", 105, 20, { align: "center" });
+        doc.setFontSize(10);
+        doc.text(`Rango: ${d} al ${h}`, 105, 28, { align: "center" });
+        doc.text(`Complejo: WORLD PADEL CENTER CONCORDIA`, 105, 33, { align: "center" });
+
+        // Usamos autoTable para crear la lista
+        const filas = datos.map(r => [r.fecha.split(',')[0], r.nombre, r.dni, "SI"]);
+        
+        doc.autoTable({
+            startY: 40,
+            head: [['Fecha', 'Jugador', 'DNI', 'Firma']],
+            body: filas,
+            theme: 'striped',
+            headStyles: { fillColor: [39, 174, 96] }
+        });
+
+        doc.save(`Informe_Deslindes_${d}_al_${h}.pdf`);
+    }
+
+    // --- FUNCIÓN INDIVIDUAL (LA DE SIEMPRE) ---
+    function exportarFichaIndividual(r) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        try { doc.addImage(URL_LOGO, 'PNG', 85, 10, 30, 25); } catch(e) {}
+        doc.setFontSize(16);
+        doc.text("DESLINDE DE RESPONSABILIDAD", 105, 45, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("CIRCUITO WPCC 2026", 105, 51, { align: "center" });
+        doc.text(`Jugador: ${r.nombre}`, 20, 70);
+        doc.text(`DNI: ${r.dni}`, 20, 78);
+        doc.text(`Fecha: ${r.fecha}`, 20, 86);
+        if(r.firma_img) doc.addImage(r.firma_img, 'PNG', 20, 95, 60, 25);
+        doc.save(`Ficha_${r.dni}.pdf`);
     }
 
     document.getElementById('busqueda').oninput = (e) => {
         const val = e.target.value.toLowerCase();
-        const filtrados = registros.filter(r => 
-            r.nombre.toLowerCase().includes(val) || 
-            r.dni.includes(val)
-        );
-        dibujarTabla(filtrados);
+        dibujarTabla(registros.filter(r => r.nombre.toLowerCase().includes(val) || r.dni.includes(val)));
     };
-
-    function exportarPDF(r) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        try {
-            doc.addImage(URL_LOGO, 'PNG', 89, 10, 30, 25); 
-        } catch(e) { console.warn("Logo no disponible"); }
-
-        doc.setFontSize(16);
-        doc.setTextColor(44, 62, 80);
-        doc.text("DESLINDE DE RESPONSABILIDAD", 105, 45, { align: "center" });
-        
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text("CIRCUITO WPCC 2026 - WORLD PADEL CENTER CONCORDIA", 105, 51, { align: "center" });
-
-        const legalText = `Por la presente, quien suscribe declara conocer y aceptar los términos y condiciones:
-            
-1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos. El Participante asume voluntariamente todos los riesgos asociados con su participación.
-
-2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas y que no padece ninguna condición médica que le impida participar de manera segura.
-
-3. ALCANCE DEL SERVICIO DE EMERGENCIAS: Se informa que el Complejo cuenta con Servicio de Emergencias Médicas (Área Protegida). Su existencia no implica garantía de indemnidad.
-
-4. EXONERACIÓN DE RESPONSABILIDAD: El Participante libera de toda responsabilidad civil o penal al Complejo y a los Organizadores por cualquier lesión física o daño derivado de la práctica del deporte o pérdida de pertenencias personales.`;
-
-        doc.setFontSize(9);
-        doc.setTextColor(60);
-        const splitLegal = doc.splitTextToSize(legalText, 170);
-        doc.text(splitLegal, 20, 65);
-
-        const finalY = 70 + (splitLegal.length * 5);
-        
-        doc.setFontSize(12);
-        doc.setTextColor(0);
-        doc.text(`Nombre Completo: ${r.nombre}`, 20, finalY + 10);
-        doc.text(`DNI: ${r.dni}`, 20, finalY + 18);
-        doc.text(`Fecha de Firma: ${r.fecha}`, 20, finalY + 26);
-        
-        doc.setFontSize(10);
-        doc.text("Firma del Participante:", 20, finalY + 40);
-        if(r.firma_img) {
-            doc.addImage(r.firma_img, 'PNG', 20, finalY + 45, 60, 25);
-        }
-
-        doc.setDrawColor(39, 174, 96);
-        doc.line(20, finalY + 75, 190, finalY + 75);
-
-        doc.save(`Deslinde_${r.dni}_${r.nombre.replace(/\s+/g, '_')}.pdf`);
-    }
 </script>
 </body>
 </html>
