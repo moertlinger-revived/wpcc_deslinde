@@ -24,6 +24,28 @@
             color: var(--secondary);
         }
 
+        /* --- ESTILOS DEL LOGIN --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .login-card {
+            background: white; padding: 30px; border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center;
+        }
+        .login-card h2 { margin-top: 0; color: var(--secondary); }
+        .login-card input {
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd;
+            border-radius: 8px; box-sizing: border-box; font-size: 16px;
+        }
+        .btn-login {
+            background: var(--secondary); color: white; width: 100%; padding: 12px;
+            border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px;
+        }
+
+        /* --- ESTILOS DEL PANEL (OCULTO POR DEFECTO) --- */
+        #admin-content { display: none; }
+
         .box { 
             max-width: 900px; 
             margin: auto; 
@@ -185,32 +207,68 @@
 </head>
 <body>
 
-<div class="box">
-    <h1>WPCC - Panel de Control</h1>
-
-    <div class="admin-tools">
-        <span class="tool-title">Generar Informe de Jugadores</span>
-        <div class="date-inputs">
-            <input type="date" id="fecha-desde">
-            <input type="date" id="fecha-hasta">
-        </div>
-        <button class="btn btn-report" id="btn-generar-informe">📊 DESCARGAR REPORTE POR FECHAS</button>
+<div id="login-overlay">
+    <div class="login-card">
+        <h2>Panel Admin</h2>
+        <input type="password" id="admin-pass" placeholder="Contraseña de acceso">
+        <button class="btn-login" onclick="checkPass()">ENTRAR</button>
+        <p id="error-msg" style="color: red; font-size: 12px; display: none;">Contraseña incorrecta</p>
     </div>
-
-    <input type="text" id="busqueda" placeholder="🔍 Buscar por DNI o Nombre...">
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Fecha</th>
-                <th>Jugador</th>
-                <th>DNI</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody id="tabla"></tbody>
-    </table>
 </div>
+
+<div id="admin-content">
+    <div class="box">
+        <h1>WPCC - Panel de Control</h1>
+
+        <div class="admin-tools">
+            <span class="tool-title">Generar Informe de Jugadores</span>
+            <div class="date-inputs">
+                <input type="date" id="fecha-desde">
+                <input type="date" id="fecha-hasta">
+            </div>
+            <button class="btn btn-report" id="btn-generar-informe">📊 DESCARGAR REPORTE POR FECHAS</button>
+        </div>
+
+        <input type="text" id="busqueda" placeholder="🔍 Buscar por DNI o Nombre...">
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Jugador</th>
+                    <th>DNI</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // --- LÓGICA DE SEGURIDAD ---
+    const PASS_CORRECTA = "wpcc2026"; // <--- CAMBIA TU CONTRASEÑA AQUÍ
+
+    function checkPass() {
+        const p = document.getElementById('admin-pass').value;
+        if(p === PASS_CORRECTA) {
+            sessionStorage.setItem('admin_auth', 'true');
+            showAdmin();
+        } else {
+            document.getElementById('error-msg').style.display = 'block';
+        }
+    }
+
+    function showAdmin() {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('admin-content').style.display = 'block';
+    }
+
+    // Verificar si ya estaba logueado
+    if(sessionStorage.getItem('admin_auth') === 'true') {
+        showAdmin();
+    }
+</script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -263,33 +321,25 @@
         
         if (!d || !h) return alert("Selecciona el rango de fechas");
 
-        // Normalizamos las fechas seleccionadas
         const fDesde = new Date(d + "T00:00:00");
         const fHasta = new Date(h + "T23:59:59");
 
         const filtrados = registros.filter(r => {
-            // Convertimos la fecha guardada "DD/MM/AAAA" a objeto Date comparable
             const fechaParte = r.fecha.split(',')[0]; 
             const [dia, mes, anio] = fechaParte.split('/');
-            const fReg = new Date(anio, mes - 1, dia); // Mes - 1 por índice 0 en JS
-
+            const fReg = new Date(anio, mes - 1, dia);
             return fReg >= fDesde && fReg <= fHasta;
         });
 
-        if (filtrados.length === 0) {
-            return alert("No se encontraron registros para ese rango.");
-        }
+        if (filtrados.length === 0) return alert("No se encontraron registros.");
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
         doc.setFontSize(16);
         doc.text("REPORTE DE JUGADORES REGISTRADOS", 105, 20, { align: "center" });
         doc.setFontSize(10);
         doc.text(`Rango: ${d} al ${h}`, 105, 28, { align: "center" });
-
         const body = filtrados.map(r => [r.fecha.split(',')[0], r.nombre, r.dni, "SI"]);
-        
         doc.autoTable({
             startY: 35,
             head: [['Fecha', 'Jugador', 'DNI', 'Firma']],
@@ -297,75 +347,44 @@
             headStyles: { fillColor: [44, 62, 80] },
             theme: 'striped'
         });
-
         doc.save(`Reporte_WPCC_${d}_a_${h}.pdf`);
     };
 
-    // --- EXPORTAR FICHA INDIVIDUAL COMPLETA (CON TEXTO LEGAL) ---
-    function exportarPDFIndividual(r) {
+    // --- EXPORTAR FICHA INDIVIDUAL COMPLETA ---
+    window.exportarPDFIndividual = function(r) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // 1. Logo
-        try { doc.addImage(URL_LOGO, 'PNG', 85, 10, 30, 25); } catch(e) { console.warn("Logo no disponible"); }
-
-        // 2. Títulos
+        try { doc.addImage(URL_LOGO, 'PNG', 85, 10, 30, 25); } catch(e) {}
         doc.setFontSize(16);
         doc.setTextColor(44, 62, 80);
         doc.text("DESLINDE DE RESPONSABILIDAD", 105, 45, { align: "center" });
-        
         doc.setFontSize(10);
         doc.setTextColor(100);
-        doc.text("CIRCUITO WPCC 2026 - WORLD PADEL CENTER CONCORDIA", 105, 51, { align: "center" });
-
-        // 3. Texto Legal Completo
+        doc.text("CIRCUITO WPCC 2026", 105, 51, { align: "center" });
         const legalText = `Por la presente, quien suscribe declara conocer y aceptar los términos y condiciones:
-            
-1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos. El Participante asume voluntariamente todos los riesgos asociados con su participación.
-
-2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas y que no padece ninguna condición médica que le impida participar de manera segura.
-
-3. ALCANCE DEL SERVICIO DE EMERGENCIAS: Se informa que el Complejo cuenta con Servicio de Emergencias Médicas (Área Protegida). Su existencia no implica garantía de indemnidad.
-
-4. EXONERACIÓN DE RESPONSABILIDAD: El Participante libera de toda responsabilidad civil o penal al Complejo y a los Organizadores por cualquier lesión física o daño derivado de la práctica del deporte o pérdida de pertenencias personales.`;
-
+1. ASUNCIÓN DE RIESGOS: El Participante asume voluntariamente todos los riesgos asociados con su participación.
+2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas.
+3. ALCANCE DEL SERVICIO DE EMERGENCIAS: Área Protegida disponible.
+4. EXONERACIÓN DE RESPONSABILIDAD: El Participante libera de toda responsabilidad al Complejo.`;
         doc.setFontSize(9);
         doc.setTextColor(60);
         const splitLegal = doc.splitTextToSize(legalText, 170);
         doc.text(splitLegal, 20, 65);
-
-        // 4. Datos del Jugador
         const finalY = 70 + (splitLegal.length * 5);
-        
         doc.setFontSize(12);
         doc.setTextColor(0);
         doc.text(`Nombre Completo: ${r.nombre}`, 20, finalY + 10);
         doc.text(`DNI: ${r.dni}`, 20, finalY + 18);
         doc.text(`Fecha de Firma: ${r.fecha}`, 20, finalY + 26);
-        
-        // 5. Firma Digital
         doc.setFontSize(10);
         doc.text("Firma del Participante:", 20, finalY + 40);
-        if(r.firma_img) {
-            doc.addImage(r.firma_img, 'PNG', 20, finalY + 45, 60, 25);
-        }
-
-        // 6. Línea estética final
-        doc.setDrawColor(39, 174, 96);
-        doc.line(20, finalY + 75, 190, finalY + 75);
-
-        // Descarga
-        doc.save(`Ficha_${r.dni}_${r.nombre.replace(/\s+/g, '_')}.pdf`);
+        if(r.firma_img) doc.addImage(r.firma_img, 'PNG', 20, finalY + 45, 60, 25);
+        doc.save(`Ficha_${r.dni}.pdf`);
     }
 
-    // Buscador interactivo
     document.getElementById('busqueda').oninput = (e) => {
         const v = e.target.value.toLowerCase();
-        const filtrados = registros.filter(r => 
-            r.nombre.toLowerCase().includes(v) || 
-            r.dni.includes(v)
-        );
-        dibujarTabla(filtrados);
+        dibujarTabla(registros.filter(r => r.nombre.toLowerCase().includes(v) || r.dni.includes(v)));
     };
 </script>
 </body>
