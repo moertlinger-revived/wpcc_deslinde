@@ -43,7 +43,7 @@
         }
 
         .logo-container img {
-            max-width: 120px;
+            max-width: 150px; /* Ajustado el tamaño */
             height: auto;
         }
 
@@ -135,7 +135,7 @@
 
 <div class="container">
     <div class="logo-container">
-        <img src="https://lh3.googleusercontent.com/u/0/d/1Sbun1g6OMSdNtM-6arDu5XUxH-NbLwwP" class="logo-top">
+        <img id="img-logo-web" src="" alt="Logo WPCC">
     </div>
     <h2>Registro de Jugador</h2>
     
@@ -184,9 +184,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-    // Reemplaza esta URL con el link real de tu logo (formato .png o .jpg)
-    const URL_LOGO = "https://lh3.googleusercontent.com/u/0/d/19HeJsgAOuOmn97XwjqZ36edP9GqT-Bzp";
-
+    // COLOCA AQUÍ EL LINK DE TU LOGO (Asegúrate que termine en .png o .jpg)
+    const URL_LOGO = "https://drive.google.com/file/d/19HeJsgAOuOmn97XwjqZ36edP9GqT-Bzp/view?usp=drive_link"; 
 
     const firebaseConfig = {
         apiKey: "AIzaSyCvB-licXMCGf0aotJOJis-UDETCWi0kTU",
@@ -203,8 +202,11 @@
     const signaturePad = new SignaturePad(canvas);
     let firmaBase64 = null;
 
-    // Actualizar logo web
-    document.getElementById('img-logo-web').src = URL_LOGO;
+    // CARGAR LOGO EN EL INDEX
+    const logoImg = document.getElementById('img-logo-web');
+    if(logoImg) {
+        logoImg.src = URL_LOGO;
+    }
 
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -249,7 +251,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // LOGO EN PDF (Header)
+            // LOGO EN PDF
             try {
                 doc.addImage(URL_LOGO, 'PNG', 85, 10, 40, 20); 
             } catch(e) { console.log("No se pudo cargar el logo en PDF"); }
@@ -288,7 +290,6 @@
             doc.text("Firma Digital del Participante:", 20, finalY + 40);
             doc.addImage(firmaBase64, 'PNG', 20, finalY + 45, 60, 25);
             
-            // Línea decorativa final
             doc.setDrawColor(39, 174, 96);
             doc.line(20, finalY + 75, 190, finalY + 75);
 
