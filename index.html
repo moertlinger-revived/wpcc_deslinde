@@ -57,7 +57,7 @@
         canvas {
             width: 100%;
             height: 200px;
-            touch-action: none; /* Crucial para firmas en móviles */
+            touch-action: none;
         }
         .btn-submit {
             width: 100%;
@@ -108,16 +108,33 @@
     <div class="signature-container">
         <canvas id="signature-pad"></canvas>
     </div>
-    <button class="btn-clear" onclick="clearSignature()">Borrar Firma</button>
+    <button class="btn-clear" id="clear-button">Borrar Firma</button>
 
-    <button class="btn-submit" onclick="saveData()">CONFIRMAR Y ENVIAR</button>
+    <button class="btn-submit" id="submit-button">CONFIRMAR Y ENVIAR</button>
 </div>
 
-<script>
-    const canvas = document.querySelector("canvas");
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+    // Tu configuración de Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvB-licXMCGf0aotJOJis-UDETCWi0kTU",
+        authDomain: "padel-safe-pro.firebaseapp.com",
+        databaseURL: "https://padel-safe-pro-default-rtdb.firebaseio.com",
+        projectId: "padel-safe-pro",
+        storageBucket: "padel-safe-pro.firebasestorage.app",
+        messagingSenderId: "824419244376",
+        appId: "1:824419244376:web:6b36a78150e62ef1622d2d",
+        measurementId: "G-QRCGNBEW0J"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const canvas = document.getElementById("signature-pad");
     const signaturePad = new SignaturePad(canvas);
 
-    // Ajustar resolución del canvas
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
@@ -128,63 +145,44 @@
     window.onresize = resizeCanvas;
     resizeCanvas();
 
-    function clearSignature() {
+    document.getElementById('clear-button').addEventListener('click', () => {
         signaturePad.clear();
-    }
+    });
 
-    // Importar Firebase (Versión 9+ Modular)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+    document.getElementById('submit-button').addEventListener('click', async () => {
+        const nombre = document.getElementById('nombre').value;
+        const dni = document.getElementById('dni').value;
 
-// Tu configuración de Firebase (LA QUE COPIASTE EN EL PASO ANTERIOR)
-const firebaseConfig = {
-  apiKey: "AIzaSyCvB-licXMCGf0aotJOJis-UDETCWi0kTU",
-  authDomain: "padel-safe-pro.firebaseapp.com",
-  databaseURL: "https://padel-safe-pro-default-rtdb.firebaseio.com",
-  projectId: "padel-safe-pro",
-  storageBucket: "padel-safe-pro.firebasestorage.app",
-  messagingSenderId: "824419244376",
-  appId: "1:824419244376:web:6b36a78150e62ef1622d2d",
-  measurementId: "G-QRCGNBEW0J"
-};
+        if (!nombre || !dni) {
+            alert("Por favor, complete nombre y DNI.");
+            return;
+        }
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
+        if (signaturePad.isEmpty()) {
+            alert("Por favor, firme antes de enviar.");
+            return;
+        }
 
-async function saveData() {
-    if (signaturePad.isEmpty()) {
-        alert("Por favor, firme antes de enviar.");
-        return;
-    }
+        const firmaBase64 = signaturePad.toDataURL(); // Imagen convertida a texto
 
-    const dni = document.getElementById('dni').value;
-    const nombre = document.getElementById('nombre').value;
-    const firmaBase64 = signaturePad.toDataURL(); // Imagen
+        try {
+            // Guardamos todo en Firestore (Base de datos)
+            await addDoc(collection(db, "deslindes"), {
+                nombre: nombre,
+                dni: dni,
+                fecha: new Date().toISOString(),
+                firma_img: firmaBase64, // Aquí se guarda la firma
+                firmado: true
+            });
 
-    try {
-        // 1. Subir imagen al Storage
-        const storageRef = ref(storage, `firmas/${dni}_${Date.now()}.png`);
-        await uploadString(storageRef, firmaBase64, 'data_url');
+            alert("✅ Firma guardada con éxito. ¡Ya puedes jugar!");
+            location.reload(); 
 
-        // 2. Guardar datos en Firestore
-        await addDoc(collection(db, "deslindes"), {
-            nombre: nombre,
-            dni: dni,
-            fecha: new Date().toISOString(),
-            firmado: true
-        });
-
-        alert("✅ Firma guardada con éxito. ¡Ya puedes entrar a la cancha!");
-        location.reload(); // Limpiar formulario
-
-    } catch (e) {
-        console.error("Error al guardar: ", e);
-        alert("Hubo un error. Intenta de nuevo.");
-    }
-}
-    
+        } catch (e) {
+            console.error("Error al guardar: ", e);
+            alert("Error: Asegúrate de haber activado Firestore en 'Modo de prueba'.");
+        }
+    });
 </script>
 
 </body>
