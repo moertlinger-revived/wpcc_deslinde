@@ -3,54 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - PadelSafe PRO</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Admin - PadelSafe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; }
-        .dashboard { max-width: 1100px; margin: 0 auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { color: #1a1a1a; border-bottom: 2px solid #f0f4f8; padding-bottom: 15px; margin-bottom: 20px; }
-        .search-box { margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; padding: 20px; }
+        .box { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; background: #f8fafc; padding: 12px; border-bottom: 2px solid #edf2f7; }
-        td { padding: 12px; border-bottom: 1px solid #edf2f7; }
-        .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 5px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background: #f8fafc; }
+        .btn { border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
         .btn-pdf { background: #27ae60; color: white; }
-        .btn-view { background: #edf2f7; color: #4a5568; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 12px; position: relative; text-align: center; }
-        .firma-preview { border: 1px solid #eee; width: 100%; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
-    <h1>PadelSafe Admin</h1>
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Buscar por DNI o Nombre...">
-    </div>
+<div class="box">
+    <h1>Panel de Control</h1>
+    <input type="text" id="busqueda" placeholder="Buscar por DNI o Nombre...">
     <table>
         <thead>
             <tr>
-                <th>Fecha</th>
                 <th>Jugador</th>
                 <th>DNI</th>
-                <th>Acciones</th>
+                <th>Acción</th>
             </tr>
         </thead>
-        <tbody id="resultsTable">
-            <tr><td colspan="4" style="text-align:center;">Cargando datos...</td></tr>
-        </tbody>
+        <tbody id="tabla"></tbody>
     </table>
-</div>
-
-<div id="firmaModal" class="modal">
-    <div class="modal-content">
-        <span style="position:absolute;right:20px;cursor:pointer;font-size:24px;" onclick="document.getElementById('firmaModal').style.display='none'">&times;</span>
-        <h3>Firma Digital</h3>
-        <img id="imgFirma" class="firma-preview" src="">
-    </div>
 </div>
 
 <script type="module">
@@ -68,81 +49,42 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    let todosLosDeslindes = [];
+    let registros = [];
 
-    // Obtener datos
-    const q = query(collection(db, "deslindes"), orderBy("fecha", "desc"));
-    onSnapshot(q, (snapshot) => {
-        todosLosDeslindes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderTable(todosLosDeslindes);
-    }, (error) => {
-        console.error("Error al obtener datos: ", error);
-        document.getElementById('resultsTable').innerHTML = `<tr><td colspan="4" style="color:red;">Error: Revisa las Reglas de Firebase.</td></tr>`;
+    onSnapshot(query(collection(db, "deslindes"), orderBy("fecha", "desc")), (snap) => {
+        registros = snap.docs.map(doc => doc.data());
+        dibujarTabla(registros);
     });
 
-    function renderTable(data) {
-        const tableBody = document.getElementById('resultsTable');
-        if (data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay registros encontrados.</td></tr>';
-            return;
-        }
-        
-        tableBody.innerHTML = '';
-        data.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${item.fecha ? item.fecha.split(',')[0] : 'S/F'}</td>
-                <td><strong>${item.nombre}</strong></td>
-                <td>${item.dni}</td>
-                <td>
-                    <button class="btn btn-view" id="v-${item.id}">Ver</button>
-                    <button class="btn btn-pdf" id="p-${item.id}">PDF</button>
-                </td>
-            `;
-            tableBody.appendChild(row);
+    function dibujarTabla(datos) {
+        const t = document.getElementById('tabla');
+        t.innerHTML = datos.map((r, i) => `
+            <tr>
+                <td>${r.nombre}</td>
+                <td>${r.dni}</td>
+                <td><button class="btn btn-pdf" id="btn-${i}">PDF</button></td>
+            </tr>
+        `).join('');
 
-            // Asignar eventos a los botones de forma segura
-            document.getElementById(`v-${item.id}`).onclick = () => {
-                document.getElementById('imgFirma').src = item.firma_img;
-                document.getElementById('firmaModal').style.display = 'block';
-            };
-
-            document.getElementById(`p-${item.id}`).onclick = () => {
-                generarPDFAdmin(item.nombre, item.dni, item.fecha, item.firma_img);
-            };
+        datos.forEach((r, i) => {
+            document.getElementById(`btn-${i}`).onclick = () => exportarPDF(r);
         });
     }
 
-    // Buscador
-    document.getElementById('searchInput').oninput = (e) => {
-        const term = e.target.value.toLowerCase();
-        const filtrados = todosLosDeslindes.filter(d => 
-            d.nombre.toLowerCase().includes(term) || d.dni.includes(term)
-        );
-        renderTable(filtrados);
+    document.getElementById('busqueda').oninput = (e) => {
+        const val = e.target.value.toLowerCase();
+        dibujarTabla(registros.filter(r => r.nombre.toLowerCase().includes(val) || r.dni.includes(val)));
     };
 
-    async function generarPDFAdmin(nombre, dni, fecha, firmaImg) {
+    function exportarPDF(r) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.rect(10, 10, 190, 277);
-        doc.setFontSize(20);
-        doc.text("DESLINDE DE RESPONSABILIDAD", 105, 30, { align: "center" });
-        doc.setFontSize(12);
-        doc.text(`Nombre: ${nombre}`, 20, 60);
-        doc.text(`DNI: ${dni}`, 20, 70);
-        doc.text(`Fecha: ${fecha}`, 20, 80);
-        doc.addImage(firmaImg, 'PNG', 20, 100, 60, 25);
-        
-        const pdfBlob = doc.output('blob');
-        const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'PDF Deslinde' });
-        } else {
-            doc.save(`Deslinde_${dni}.pdf`);
-        }
+        doc.text("DESLINDE DE RESPONSABILIDAD", 105, 20, { align: "center" });
+        doc.text(`Jugador: ${r.nombre}`, 20, 40);
+        doc.text(`DNI: ${r.dni}`, 20, 50);
+        doc.addImage(r.firma_img, 'PNG', 20, 60, 60, 25);
+        doc.save(`Copia_${r.dni}.pdf`);
     }
 </script>
-
 </body>
 </html>
