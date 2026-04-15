@@ -3,79 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PadelSafe PRO - Registro</title>
+    <title>PadelSafe PRO</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; margin: 15px; box-sizing: border-box; }
-        h2 { color: #1a1a1a; text-align: center; margin: 0 0 20px 0; }
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; margin: 15px; }
+        h2 { color: #1a1a1a; text-align: center; margin-top: 0; }
         .form-group { margin-bottom: 1.2rem; }
         label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; }
         input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        .legal-box { height: 120px; overflow-y: auto; border: 1px solid #eee; padding: 12px; background: #fafafa; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; color: #555; line-height: 1.4; }
-        .checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1.5rem; cursor: pointer; font-size: 0.9rem; }
-        .checkbox-group input { margin-top: 3px; }
+        .legal-box { height: 100px; overflow-y: auto; border: 1px solid #eee; padding: 12px; background: #fafafa; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem; color: #555; }
+        .checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1.5rem; cursor: pointer; }
+        .btn-open-sign { width: 100%; padding: 14px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn-submit { width: 100%; padding: 16px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: none; margin-top: 10px; }
         
-        /* Botones Principales */
-        .btn-open-sign { width: 100%; padding: 14px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 10px; transition: background 0.3s; }
-        .btn-submit { width: 100%; padding: 16px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: none; }
-        
-        /* Pantalla de Firma Fullscreen */
-        #sign-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; z-index: 1000; flex-direction: column; }
-        .sign-header { padding: 20px; text-align: center; background: #f8f9fa; border-bottom: 1px solid #ddd; }
-        .canvas-container { flex: 1; position: relative; background: #fff; width: 100%; height: 100%; }
+        /* Pantalla de Firma */
+        #sign-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; flex-direction: column; }
+        .canvas-container { flex: 1; position: relative; background: #fff; }
         canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; touch-action: none; }
-        .sign-footer { padding: 20px; display: flex; gap: 10px; background: #f8f9fa; border-top: 1px solid #ddd; }
-        .btn-cancel { flex: 1; padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-done { flex: 2; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
-
-        .signature-preview { width: 120px; height: auto; border: 1px solid #ddd; display: none; margin: 15px auto; border-radius: 4px; background: #fff; }
+        .sign-footer { padding: 20px; display: flex; gap: 10px; background: #f8f9fa; }
+        .btn-cancel { flex: 1; padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: 600; }
+        .btn-done { flex: 2; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: 700; }
+        .signature-preview { width: 120px; height: auto; border: 1px solid #ddd; display: none; margin: 15px auto; border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container" id="main-form">
-    <h2>📝 Registro PadelSafe</h2>
-    
+    <h2>📝 PadelSafe</h2>
     <div class="form-group">
         <label>Nombre y Apellido</label>
-        <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
+        <input type="text" id="nombre" placeholder="Nombre completo">
     </div>
-
     <div class="form-group">
         <label>DNI / Documento</label>
-        <input type="text" id="dni" placeholder="Número de documento">
+        <input type="text" id="dni" placeholder="Documento">
     </div>
-
     <div class="legal-box">
-        <strong>TÉRMINOS Y CONDICIONES:</strong><br>
-        Declaro estar en perfectas condiciones de salud para la práctica de Pádel. Libero al club de toda responsabilidad por lesiones o accidentes. Entiendo que esta firma tiene carácter de declaración jurada y que mis datos serán tratados conforme a la política de privacidad.
+        Acepto los términos de salud y responsabilidad para la práctica deportiva.
     </div>
-
     <label class="checkbox-group">
-        <input type="checkbox" id="acepto">
-        <span>He leído y acepto los términos y condiciones.</span>
+        <input type="checkbox" id="acepto"> <span>Acepto los términos</span>
     </label>
-
-    <button type="button" class="btn-open-sign" id="btn-open-sign">🖋️ FIRMAR AHORA</button>
-    
-    <div style="text-align: center;">
-        <img id="prev-firma" class="signature-preview" alt="Vista previa firma">
-    </div>
-    
-    <button type="button" class="btn-submit" id="btn-submit">ENVIAR REGISTRO</button>
+    <button type="button" class="btn-open-sign" id="btn-open-sign">🖋️ FIRMAR</button>
+    <div style="text-align: center;"><img id="prev-firma" class="signature-preview"></div>
+    <button type="button" class="btn-submit" id="btn-submit">ENVIAR TODO</button>
 </div>
 
 <div id="sign-screen">
-    <div class="sign-header"><strong>Firme en la pantalla</strong></div>
-    <div class="canvas-container">
-        <canvas id="signature-pad"></canvas>
-    </div>
+    <div class="canvas-container"><canvas id="signature-pad"></canvas></div>
     <div class="sign-footer">
-        <button class="btn-cancel" id="btn-close-sign">CANCELAR</button>
-        <button class="btn-done" id="btn-save-sign">LISTO</button>
+        <button class="btn-cancel" id="btn-close-sign">VOLVER</button>
+        <button class="btn-done" id="btn-save-sign">GUARDAR FIRMA</button>
     </div>
 </div>
 
@@ -94,10 +75,9 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     const canvas = document.getElementById("signature-pad");
     const signaturePad = new SignaturePad(canvas);
-    let firmaGuardadaBase64 = null;
+    let firmaBase64 = null;
 
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -108,87 +88,64 @@
     }
 
     document.getElementById('btn-open-sign').onclick = () => {
-        if (!document.getElementById('acepto').checked) {
-            alert("❌ Debes aceptar los términos y condiciones.");
-            return;
-        }
+        if (!document.getElementById('acepto').checked) return alert("Acepta los términos");
         document.getElementById('sign-screen').style.display = 'flex';
         resizeCanvas();
     };
 
-    document.getElementById('btn-close-sign').onclick = () => {
-        document.getElementById('sign-screen').style.display = 'none';
-        signaturePad.clear();
-    };
+    document.getElementById('btn-close-sign').onclick = () => document.getElementById('sign-screen').style.display = 'none';
 
     document.getElementById('btn-save-sign').onclick = () => {
-        if (signaturePad.isEmpty()) {
-            alert("Por favor, firme antes de continuar.");
-            return;
-        }
-        firmaGuardadaBase64 = signaturePad.toDataURL();
-        document.getElementById('prev-firma').src = firmaGuardadaBase64;
+        if (signaturePad.isEmpty()) return alert("Firme por favor");
+        firmaBase64 = signaturePad.toDataURL();
+        document.getElementById('prev-firma').src = firmaBase64;
         document.getElementById('prev-firma').style.display = 'block';
         document.getElementById('btn-submit').style.display = 'block';
-        document.getElementById('btn-open-sign').innerText = "🖋️ RE-HACER FIRMA";
         document.getElementById('sign-screen').style.display = 'none';
     };
 
     document.getElementById('btn-submit').onclick = async () => {
-        const nombre = document.getElementById('nombre').value;
-        const dni = document.getElementById('dni').value;
-        if (!nombre || !dni) { alert("Complete todos los campos."); return; }
-
         const btn = document.getElementById('btn-submit');
-        btn.innerText = "⏳ GUARDANDO REGISTRO...";
         btn.disabled = true;
+        btn.innerText = "GUARDANDO...";
 
         try {
-            const fecha = new Date().toLocaleString('es-AR');
-            
             // 1. GUARDAR EN FIREBASE
             await addDoc(collection(db, "deslindes"), {
-                nombre, dni, fecha, firma_img: firmaGuardadaBase64, firmado: true
+                nombre: document.getElementById('nombre').value,
+                dni: document.getElementById('dni').value,
+                fecha: new Date().toLocaleString(),
+                firma_img: firmaBase64
             });
 
             // 2. GENERAR PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("DESLINDE DE RESPONSABILIDAD - PADELSAFE", 105, 20, { align: "center" });
-            doc.text(`Jugador: ${nombre}`, 20, 40);
-            doc.text(`DNI: ${dni}`, 20, 50);
-            doc.text(`Fecha: ${fecha}`, 20, 60);
-            doc.addImage(firmaGuardadaBase64, 'PNG', 20, 70, 60, 25);
+            doc.text("DESLINDE PADELSAFE", 105, 20, { align: "center" });
+            doc.text(`Jugador: ${document.getElementById('nombre').value}`, 20, 40);
+            doc.addImage(firmaBase64, 'PNG', 20, 50, 60, 25);
+
+            // 3. LIMPIEZA VISUAL INMEDIATA (Antes del menú de compartir)
+            document.getElementById('sign-screen').style.display = 'none';
+            document.getElementById('main-form').style.opacity = '0.3'; // Feedback visual de que terminó
+
+            // 4. COMPARTIR/DESCARGAR
+            const pdfBlob = doc.output('blob');
+            const file = new File([pdfBlob], "Deslinde.pdf", { type: 'application/pdf' });
             
-            // 3. COMPARTIR O DESCARGAR
-            try {
-                const pdfBlob = doc.output('blob');
-                const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
-                if (navigator.share && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'Tu Deslinde' });
-                } else {
-                    doc.save(`Deslinde_${dni}.pdf`);
-                }
-            } catch (shareErr) {
-                doc.save(`Deslinde_${dni}.pdf`);
+            if (navigator.share && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: 'Deslinde' }).catch(() => {});
+            } else {
+                doc.save("Deslinde.pdf");
             }
 
-            // --- REINICIO TOTAL DEL SISTEMA ---
-            // Ocultamos todo antes del alert
-            document.getElementById('sign-screen').style.display = 'none';
-            document.getElementById('prev-firma').style.display = 'none';
-            document.getElementById('btn-submit').style.display = 'none';
-            
-            alert("✅ ¡Registro Exitoso! El sistema se reiniciará para el siguiente jugador.");
-            
-            // Recarga limpia
-            window.location.href = window.location.pathname + "?v=" + Date.now();
+            // 5. RECARGA TOTAL
+            alert("✅ Registro completado con éxito.");
+            window.location.reload();
 
         } catch (e) {
-            console.error(e);
-            alert("❌ Error de conexión. Verifique internet.");
+            alert("Error de conexión");
             btn.disabled = false;
-            btn.innerText = "ENVIAR REGISTRO";
         }
     };
 </script>
