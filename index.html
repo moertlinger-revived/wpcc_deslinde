@@ -260,7 +260,7 @@
 
             const legalText = `Por la presente, quien suscribe declara conocer y aceptar los términos y condiciones:
             
-1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos. El Participante asume voluntariamente todos los riesgos asociados con su participación.
+1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos (torceduras, fracturas, golpes). El Participante asume voluntariamente todos los riesgos asociados con su participación.
 
 2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas y que no padece ninguna condición médica que le impida participar de manera segura.
 
@@ -268,6 +268,7 @@
 
 4. EXONERACIÓN DE RESPONSABILIDAD: El Participante libera de toda responsabilidad civil o penal al Complejo y a los Organizadores por cualquier lesión física o daño derivado de la práctica del deporte o pérdida de pertenencias personales.`;
 
+            
             doc.setFontSize(9);
             const splitLegal = doc.splitTextToSize(legalText, 170);
             doc.text(splitLegal, 20, 65);
