@@ -39,7 +39,7 @@
             width: 100%; 
             max-width: 440px; 
             box-sizing: border-box;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
         }
 
         .logo-container {
@@ -134,6 +134,19 @@
         
         .signature-preview-container { text-align: center; margin: 20px 0; }
         .signature-preview { width: 180px; height: auto; border-bottom: 2px solid var(--primary); padding: 5px; }
+
+        .credits {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #666;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        .credits a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -177,6 +190,13 @@
         <button type="button" class="btn-submit" id="btn-submit">FINALIZAR Y ENVIAR ✅</button>
     </div>
 
+    <div class="credits">
+        <p>© 2026 PadelSafe PRO | Desarrollado por 
+            <a href="https://instagram.com/moertlinger" target="_blank">@moertlinger</a> 
+            • moertlinger@gmail.com
+        </p>
+    </div>
+
     <div id="sign-screen">
         <div style="padding: 20px; text-align: center; font-weight: bold; color: var(--secondary);">POR FAVOR, FIRME AQUÍ</div>
         <div class="canvas-container"><canvas id="signature-pad"></canvas></div>
@@ -189,7 +209,7 @@
 
 <script>
     // --- LÓGICA DE CLAVE ---
-    const CLAVE_ACCESO = "PADEL2026"; // Puedes cambiarla aquí
+    const CLAVE_ACCESO = "PADEL2026"; 
     
     (function() {
         const pass = prompt("Ingrese la clave de acceso:");
@@ -197,7 +217,7 @@
             document.getElementById('main-wrapper').style.display = 'block';
         } else {
             alert("Acceso denegado.");
-            document.body.innerHTML = "<div style='color:white; text-align:center; margin-top:100px;'>Recarga la página para intentar de nuevo.</div>";
+            document.body.innerHTML = "<div style='color:white; text-align:center; margin-top:100px; font-family:sans-serif;'>Acceso Denegado. Recarga para intentar de nuevo.</div>";
         }
     })();
 </script>
@@ -278,7 +298,7 @@
             doc.text("CIRCUITO WPCC 2026 - WORLD PADEL CENTER CONCORDIA", 105, 51, { align: "center" });
 
             const legalText = `Por la presente, quien suscribe declara conocer y aceptar los términos y condiciones:
-            
+
 1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos (torceduras, fracturas, golpes). El Participante asume voluntariamente todos los riesgos asociados con su participación.
 
 2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas y que no padece ninguna condición médica que le impida participar de manera segura.
@@ -333,13 +353,5 @@
         }
     };
 </script>
-<div style="text-align: center; margin-top: -30px; margin-bottom: 20px; color: #666; font-size: 0.75rem; letter-spacing: 0.5px;">
-        <p>© 2026 PadelSafe PRO | Desarrollado por 
-            <a href="https://instagram.com/moertlinger" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">
-                @moertlinger
-            </a> 
-            • moertlinger@gmail.com
-        </p>
-    </div>
 </body>
 </html>
