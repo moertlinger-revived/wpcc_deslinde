@@ -15,6 +15,11 @@
             --card: #ffffff;
         }
 
+        /* Bloqueo visual inicial */
+        #main-wrapper {
+            display: none; 
+        }
+
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: var(--bg); 
@@ -65,7 +70,7 @@
         input[type="text"]:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1); }
         
         .legal-box { 
-            height: 200px; /* Altura solicitada */
+            height: 200px; 
             overflow-y: auto; 
             border: 1px solid #e2e8f0; 
             padding: 15px; 
@@ -133,58 +138,74 @@
 </head>
 <body>
 
-<div class="container">
-    <div class="logo-container">
-        <img id="img-logo-web" src="" alt="Logo WPCC">
-    </div>
-    <h2>Registro de Jugador</h2>
-    
-    <div class="form-group">
-        <label>Nombre Completo</label>
-        <input type="text" id="nombre" placeholder="Nombre y Apellido">
+<div id="main-wrapper">
+    <div class="container">
+        <div class="logo-container">
+            <img id="img-logo-web" src="" alt="Logo WPCC">
+        </div>
+        <h2>Registro de Jugador</h2>
+        
+        <div class="form-group">
+            <label>Nombre Completo</label>
+            <input type="text" id="nombre" placeholder="Nombre y Apellido">
+        </div>
+
+        <div class="form-group">
+            <label>DNI / Pasaporte</label>
+            <input type="text" id="dni" placeholder="Número de documento">
+        </div>
+
+        <div class="legal-box" id="legal-text-container">
+            <strong>Acuerdo de Exoneración de Responsabilidad - Circuito WPCC 2026</strong><br><br>
+            Complejo Deportivo: WORLD PADEL CENTER CONCORDIA<br><br>
+            1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos (torceduras, fracturas, golpes). El Participante asume voluntariamente todos los riesgos.<br><br>
+            2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas y no padece ninguna condición médica que le impida participar.<br><br>
+            3. SERVICIO DE EMERGENCIAS: El Complejo cuenta con Área Protegida. Su existencia no implica garantía de indemnidad ni traslada responsabilidad al Complejo.<br><br>
+            4. EXONERACIÓN: El Participante libera de toda responsabilidad civil o penal al Complejo y Organizadores por cualquier lesión física o daño derivado de la práctica deportiva.
+        </div>
+
+        <label class="checkbox-group">
+            <input type="checkbox" id="acepto"> <span>He leído y acepto los términos</span>
+        </label>
+        
+        <button type="button" class="btn-open-sign" id="btn-open-sign">🖋️ FIRMAR DESLINDE</button>
+        
+        <div class="signature-preview-container">
+            <img id="prev-firma" class="signature-preview" style="display:none;">
+        </div>
+        
+        <button type="button" class="btn-submit" id="btn-submit">FINALIZAR Y ENVIAR ✅</button>
     </div>
 
-    <div class="form-group">
-        <label>DNI / Pasaporte</label>
-        <input type="text" id="dni" placeholder="Número de documento">
+    <div id="sign-screen">
+        <div style="padding: 20px; text-align: center; font-weight: bold; color: var(--secondary);">POR FAVOR, FIRME AQUÍ</div>
+        <div class="canvas-container"><canvas id="signature-pad"></canvas></div>
+        <div class="sign-footer">
+            <button class="btn-cancel" id="btn-close-sign">VOLVER</button>
+            <button class="btn-done" id="btn-save-sign">ACEPTAR FIRMA</button>
+        </div>
     </div>
-
-    <div class="legal-box" id="legal-text-container">
-        <strong>Acuerdo de Exoneración de Responsabilidad - Circuito WPCC 2026</strong><br><br>
-        Complejo Deportivo: WORLD PADEL CENTER CONCORDIA<br><br>
-        1. ASUNCIÓN DE RIESGOS: El Participante declara que el pádel es una actividad física que conlleva riesgos intrínsecos (torceduras, fracturas, golpes). El Participante asume voluntariamente todos los riesgos.<br><br>
-        2. ESTADO DE SALUD: El Participante garantiza que se encuentra en condiciones físicas óptimas y no padece ninguna condición médica que le impida participar.<br><br>
-        3. SERVICIO DE EMERGENCIAS: El Complejo cuenta con Área Protegida. Su existencia no implica garantía de indemnidad ni traslada responsabilidad al Complejo.<br><br>
-        4. EXONERACIÓN: El Participante libera de toda responsabilidad civil o penal al Complejo y Organizadores por cualquier lesión física o daño derivado de la práctica deportiva.
-    </div>
-
-    <label class="checkbox-group">
-        <input type="checkbox" id="acepto"> <span>He leído y acepto los términos</span>
-    </label>
-    
-    <button type="button" class="btn-open-sign" id="btn-open-sign">🖋️ FIRMAR DESLINDE</button>
-    
-    <div class="signature-preview-container">
-        <img id="prev-firma" class="signature-preview" style="display:none;">
-    </div>
-    
-    <button type="button" class="btn-submit" id="btn-submit">FINALIZAR Y ENVIAR ✅</button>
 </div>
 
-<div id="sign-screen">
-    <div style="padding: 20px; text-align: center; font-weight: bold; color: var(--secondary);">POR FAVOR, FIRME AQUÍ</div>
-    <div class="canvas-container"><canvas id="signature-pad"></canvas></div>
-    <div class="sign-footer">
-        <button class="btn-cancel" id="btn-close-sign">VOLVER</button>
-        <button class="btn-done" id="btn-save-sign">ACEPTAR FIRMA</button>
-    </div>
-</div>
+<script>
+    // --- LÓGICA DE CLAVE ---
+    const CLAVE_ACCESO = "PADEL2026"; // Puedes cambiarla aquí
+    
+    (function() {
+        const pass = prompt("Ingrese la clave de acceso:");
+        if (pass === CLAVE_ACCESO) {
+            document.getElementById('main-wrapper').style.display = 'block';
+        } else {
+            alert("Acceso denegado.");
+            document.body.innerHTML = "<div style='color:white; text-align:center; margin-top:100px;'>Recarga la página para intentar de nuevo.</div>";
+        }
+    })();
+</script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-    // URL DEL LOGO - REEMPLAZAR AQUÍ
     const URL_LOGO = "https://lh3.googleusercontent.com/u/0/d/1FR97joQ6vlgTvgK18uO-7Mg3ab9q4LPZ";  
 
     const firebaseConfig = {
@@ -202,7 +223,6 @@
     const signaturePad = new SignaturePad(canvas);
     let firmaBase64 = null;
 
-    // Cargar logo en la web
     const webLogo = document.getElementById('img-logo-web');
     if(webLogo) webLogo.src = URL_LOGO;
 
@@ -245,7 +265,6 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // 1. LOGO EN PDF (Ajustado para no verse aplastado)
             try {
                 doc.addImage(URL_LOGO, 'PNG', 89, 10, 30, 25); 
             } catch(e) { console.error("Logo no disponible para PDF"); }
@@ -268,7 +287,6 @@
 
 4. EXONERACIÓN DE RESPONSABILIDAD: El Participante libera de toda responsabilidad civil o penal al Complejo y a los Organizadores por cualquier lesión física o daño derivado de la práctica del deporte o pérdida de pertenencias personales.`;
 
-            
             doc.setFontSize(9);
             const splitLegal = doc.splitTextToSize(legalText, 170);
             doc.text(splitLegal, 20, 65);
@@ -288,7 +306,6 @@
             doc.setDrawColor(39, 174, 96);
             doc.line(20, finalY + 75, 190, finalY + 75);
 
-            // 2. GUARDAR EN FIREBASE (Incluimos el texto legal para el Admin)
             await addDoc(collection(db, "deslindes"), {
                 nombre: nombre,
                 dni: dni,
@@ -297,7 +314,6 @@
                 deslinde_texto: legalText
             });
 
-            // 3. GENERAR BLOB Y COMPARTIR
             const pdfBlob = doc.output('blob');
             const file = new File([pdfBlob], `Deslinde_${dni}.pdf`, { type: 'application/pdf' });
             
